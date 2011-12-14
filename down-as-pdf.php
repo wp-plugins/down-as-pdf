@@ -31,15 +31,16 @@ class hacklog_dap {
 	const plugin_domain = 'down-as-pdf';
 	private static $plugin_dir = '';
 
-	public static function init() {
+	public static function init() 
+	{
 		self::$plugin_dir = WP_PLUGIN_DIR . '/down-as-pdf/';
-// Hook the admin_menu display to add admin page
+		add_action('init', array(__CLASS__, 'load_domain'));
+		// Hook the admin_menu display to add admin page
 		add_action('admin_menu', array(__CLASS__, 'settings_menu'));
 		register_activation_hook(__FILE__, array(__CLASS__, 'activate_hook'));
-		add_action('dap_clear_cache_daily_event', array(__CLASS__, 'clear_cache_daily'));
 		register_deactivation_hook(__FILE__, array(__CLASS__, 'deactivate_hook'));
-		add_action('init', array(__CLASS__, 'load_domain'));
-//link in post to generate PDF
+		add_action('dap_clear_cache_daily_event', array(__CLASS__, 'clear_cache_daily'));
+		//link in post to generate PDF
 		add_filter('the_content', array(__CLASS__, 'add_link'));
 		add_action('wp_head', array(__CLASS__, 'custom_css'));
 		add_action('admin_notices', array(__CLASS__, 'admin_notice'));
