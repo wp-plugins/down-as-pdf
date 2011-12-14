@@ -1,0 +1,14 @@
+#downaspdf a
+{
+    display: block;
+    float: right;
+    clear: left;
+    height: 32px;
+    margin-bottom: 20px;
+    padding-left: 34px;
+    padding-top: 10px;
+    background-image: url('images/down-as-pdf.png');
+    background-repeat: no-repeat;
+    
+}
+
