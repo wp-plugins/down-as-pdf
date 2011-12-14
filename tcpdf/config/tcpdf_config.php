@@ -19,13 +19,16 @@
 //============================================================+
 
 /**
- * Configuration file for TCPDF.
- * @author Nicola Asuni
- * @package com.tecnick.tcpdf
- * @version 4.9.005
- * @since 2004-10-27
+ * $Id$
+ * $Revision$
+ * $Date$
+ * @package Down As PDF
+ * @encoding UTF-8 
+ * @author 荒野无灯 <HuangYeWuDeng> 
+ * @link http://ihacklog.com 
+ * @copyright Copyright (C) 2011 荒野无灯 
+ * @license http://www.gnu.org/licenses/
  */
-
 
 // Do not delete these lines,by 荒野无灯
 if (!empty($_SERVER['SCRIPT_FILENAME']) && 'tcpdf_config.php' == basename($_SERVER['SCRIPT_FILENAME']))
