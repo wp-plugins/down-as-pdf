@@ -4,7 +4,7 @@ Donate link: http://ihacklog.com/donate
 Tags: download, pdf,document
 Requires at least: 3.2.1
 Tested up to: 3.3
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 
 This plugin generates PDF documents for visitors when they click the "<strong>Download as PDF</strong>" button below the post. 
 
@@ -39,6 +39,12 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 
 
 == Changelog ==
+
+= 2.2.1 =
+* added: Janpanese , Korean ,and Traditional Chinese support.
+* added: font selection option
+* changed: only show download button in singular pages.
+* changed: formated table and block HTML block
 
 = 2.2.0 =
 * fixed: bug when generating PDF for some articles,some words are lost.

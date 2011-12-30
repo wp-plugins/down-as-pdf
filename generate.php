@@ -14,14 +14,24 @@
  * @TODO: 修正输出JSON,Javascript的bug,对过长标题做截断处理，代码颜色、背景自定义...
   ============================================================================= */
 
-@error_reporting(0);
-require_once "../../../wp-load.php";
+require_once dirname(__FILE__) . '/../../../wp-load.php';
+if (WP_DEBUG)
+{
+	ini_set('display_errors', 1);
+}
+else
+{
+	ini_set('display_errors', 0);
+}
 
 if (headers_sent($file, $line))
 {
-	if (WP_DEBUG) {
+	if (WP_DEBUG)
+	{
 		wp_die('Error: header already sent in file <strong>' . $file . '</strong> line <strong>' . $line . '</strong>.Please check your server configure or contact the administrator.');
-	} else {
+	}
+	else
+	{
 		wp_die(__('Error: header already sent! Please contact the site administrator to solve this problem.', self::textdomain));
 	}
 }
@@ -30,14 +40,16 @@ if (headers_sent($file, $line))
  * antileech check
  * for that https does not send referer info
  */
-if (!is_ssl() && (!isset($_SERVER ['HTTP_REFERER']) || $_SERVER ['HTTP_REFERER'] == '') ) {
+if (!is_ssl() && (!isset($_SERVER ['HTTP_REFERER']) || $_SERVER ['HTTP_REFERER'] == ''))
+{
 	wp_die(__('Please do not leech.', hacklog_dap::plugin_domain));
 }
 
 $refererhost = @parse_url($_SERVER ['HTTP_REFERER']);
 //如果本站下载也被误认为盗链，请修改下面www.your-domain.com为你的博客域名
 $validReferer = array('www.your-domain.com', $_SERVER ['HTTP_HOST']);
-if (!(in_array($refererhost ['host'], $validReferer))) {
+if (!(in_array($refererhost ['host'], $validReferer)))
+{
 	wp_die(__('Please do not leech.', hacklog_dap::plugin_domain));
 }
 
@@ -48,7 +60,8 @@ $post_id = 0;
 $post_id = (int) $_GET['id'];
 $objPost = get_post($post_id);
 //check if post exists
-if (!$objPost) {
+if (!$objPost)
+{
 	wp_die(__('OOPS!Post does not exists.', hacklog_dap::plugin_domain));
 }
 
@@ -58,55 +71,57 @@ $show_in = stripslashes($down_as_pdf_options['show_in']);
 $main_font_size = stripslashes($down_as_pdf_options['main_font_size']);
 $enable_font_subsetting = stripslashes($down_as_pdf_options['enable_font_subsetting']);
 $use_cc = stripslashes($down_as_pdf_options['use_cc']);
+
+$subsetting_value = 1 == $enable_font_subsetting ? true : false;
 //'droidsansfallback' OR 'stsongstdlight' OR msungstdlight
 //$main_font = 'msungstdlight';
-$main_font = 'droidsansfallback';
+//$main_font = 'cid0cs';
+$main_font = stripslashes($down_as_pdf_options['font']);
+require_once dirname(__FILE__) . '/fontconfig.class.php';
+$dap_LFConfig = new DAP_LangFontConfig($main_font, $subsetting_value);
+
+//setup the font again
+$main_font = $dap_LFConfig->get('font');
+$subsetting_value = $dap_LFConfig->get('font_subsetting');
+
 //only allowed post type can be downloaded
-if (!in_array($objPost->post_type, array($show_in)) && 'post,page' != $show_in) {
+if (!in_array($objPost->post_type, array($show_in)) && 'post,page' != $show_in)
+{
 	wp_die(__('Oh,No! What are U doing?', hacklog_dap::plugin_domain));
 }
 
-
 /**
- * function used to setup TCPDF local languages
+ * setup TCPDF local languages
  */
-function dap_set_up_lang() {
-	switch (WPLANG) {
-		case 'zh_CN':
-			$lang_file = 'chi';
-			break;
-		case 'zh_TW':
-			$lang_file = 'zho';
-			break;
-		default:
-			$lang_file = 'eng';
-			break;
-	}
-	require_once hacklog_dap::get_plugin_dir(). "tcpdf/config/lang/{$lang_file}.php";
-}
+$lang_file = $dap_LFConfig->get('lang');
+require_once hacklog_dap::get_plugin_dir() . "tcpdf/config/lang/{$lang_file}.php";
 
-//setup the lang
-dap_set_up_lang();
+
 //require the LIB
-require hacklog_dap::get_plugin_dir(). 'tcpdf/tcpdf.php';
+require hacklog_dap::get_plugin_dir() . 'tcpdf/tcpdf.php';
 
 //author
 $objAuthor = get_userdata($objPost->post_author);
 $strPermalink = get_permalink($objPost->ID);
-$strShortlink =  wp_get_shortlink($objPost->ID);
+$strShortlink = wp_get_shortlink($objPost->ID);
 $home_url = home_url('/');
 $admin_email = get_option('admin_email');
-if ($objAuthor->display_name) {
+if ($objAuthor->display_name)
+{
 	$strAuthor = $objAuthor->display_name;
-} else {
+}
+else
+{
 	$strAuthor = $objAuthor->user_nicename;
 }
 //标签  TAGS     
 $t = array();
 $tags = '';
 $tags_arr = wp_get_post_tags($objPost->ID);
-if ($tags_arr) {
-	foreach ($tags_arr as $item) {
+if ($tags_arr)
+{
+	foreach ($tags_arr as $item)
+	{
 		$t[] = $item->name;
 	}
 	$tags = implode(',', $t);
@@ -160,7 +175,6 @@ $pdf->setLanguageArray($l);
 //SetFont($family, $style='', $size=0, $fontfile='', $subset='default')
 //$pdf->SetFont('arialunicid0', '', 14, '', true);
 //use font subsetting or not
-$subsetting_value = 1 == $enable_font_subsetting ? true : false;
 $pdf->setFontSubsetting($subsetting_value);
 $pdf->SetFont($main_font, '', PDF_FONT_SIZE_MAIN, '', 'default');
 //for Chinese word in pre tags
@@ -174,23 +188,71 @@ $pdf->SetDefaultMonospacedFont($main_font);
 // This method has several options, check the source code documentation for more information.
 $pdf->AddPage();
 $content = $objPost->post_content;
+
+class dap_codeblock_callback
+{
+
+	private static $code_block = array();
+	private static $code_block_num = 0;
+	private static $code_block_index = '::_IHACKLOG_DAP_CODE_BLOCK_%d_::';
+
+	public static function get_code_block()
+	{
+		return self::$code_block;
+	}
+
+	public static function codecolorer_plugin_callback($matches)
+	{
+		$index = sprintf(self::$code_block_index, self::$code_block_num);
+		self::$code_block[$index] = "<pre style=\"word-wrap:break-word;color: #406040;background-color: #F1F1F1;border: 1px solid #9F9F9F;\">" . htmlspecialchars($matches[4]) . "</pre>";
+		$ret = $matches[1] . $index . $matches[5];
+		self::$code_block_num++;
+		return $ret;
+	}
+
+	public static function code_tag_callback($matches)
+	{
+		$index = sprintf(self::$code_block_index, self::$code_block_num);
+		self::$code_block[$index] = "<pre style=\"word-wrap:break-word;color: #406040;background-color: #F1F1F1;border: 1px solid #9F9F9F;\">" . htmlspecialchars($matches[3]) . "</pre>";
+		$ret = $matches[1] . $index . $matches[4];
+		self::$code_block_num++;
+		return $ret;
+	}
+
+	function wp_syntax_plugin_callback($matches)
+	{
+		$index = sprintf(self::$code_block_index, self::$code_block_num);
+		self::$code_block[$index] = "<pre style=\"word-wrap:break-word;color: #406040;background-color: #F1F1F1;border: 1px solid #9F9F9F;\">" . htmlspecialchars($matches[5]) . "</pre>";
+		$ret = $matches[1] . $index . $matches[6];
+		self::$code_block_num++;
+		return $ret;
+	}
+
+}
+
 //for codecolorer plugin
-$content = preg_replace_callback(
-		'#(\s*)\[cc([^\s\]_]*(?:_[^\s\]]*)?)([^\]]*)\](.*?)\[/cc\2\](\s*)#si', create_function('$matches', 'return $matches[1] ."<pre style=\"word-wrap:break-word;color: #406040;background-color: #F1F1F1;border: 1px solid #9F9F9F;\">". htmlspecialchars($matches[4]) ."</pre>" . $matches[5];'), $content);
+$content = preg_replace_callback('#(\s*)\[cc([^\s\]_]*(?:_[^\s\]]*)?)([^\]]*)\](.*?)\[/cc\2\](\s*)#si', 'dap_codeblock_callback::codecolorer_plugin_callback', $content);
 
 //for code tag
 $content = preg_replace_callback(
-		'#(\s*)\<code(.*?)\>(.*?)\</code\>(\s*)#si', create_function('$matches', 'return $matches[1] ."<pre style=\"word-wrap:break-word;color: #406040;background-color: #F1F1F1;border: 1px solid #9F9F9F;\">". htmlspecialchars($matches[3]) ."</pre>" . $matches[4];'), $content);
+		'#(\s*)\<code(.*?)\>(.*?)\</code\>(\s*)#si', 'dap_codeblock_callback::code_tag_callback', $content);
 
 //for wp-syntax plugin pre tag
 $content = preg_replace_callback(
-		"/(\s*)<pre(?:lang=[\"']([\w-]+)[\"']|line=[\"'](\d*)[\"']|escaped=[\"'](true|false)?[\"']|\s)+>(.*)<\/pre>(\s*)/siU", create_function('$matches', 'return $matches[1] ."<pre style=\"word-wrap:break-word;color: #406040;background-color: #F1F1F1;border: 1px solid #9F9F9F;\">". htmlspecialchars($matches[5]) ."</pre>" . $matches[6];'), $content
+		"/(\s*)<pre(?:lang=[\"']([\w-]+)[\"']|line=[\"'](\d*)[\"']|escaped=[\"'](true|false)?[\"']|\s)+>(.*)<\/pre>(\s*)/siU", 'dap_codeblock_callback::wp_syntax_plugin_callback', $content
 );
 //blockquote  #F0F0F0  #F5F5F5; border: 1px solid #DADADA; color:#555555;
 $content = preg_replace_callback(
-		"/(\s*)<blockquote\s*>(.*)<\/blockquote>(\s*)/siU", create_function('$matches', 'return $matches[1] ."<pre style=\"word-wrap:break-word;color:#000000;background-color: #F5F5F5;border: 1px solid #DADADA;\">". htmlspecialchars($matches[2]) ."</pre>" . $matches[3];'), $content
+		"/(\s*)<blockquote\s*>(.*)<\/blockquote>(\s*)/siU", create_function('$matches', 'return $matches[1] ."<div style=\"word-wrap:break-word;color:#000000;background-color: #F5F5F5;border: 1px solid #DADADA;\">". $matches[2] ."</div>" . $matches[3];'), $content
 );
+
+//format table
+$content = preg_replace_callback(
+		"/(\s*)<table\s*([^>]*)>(.*)<\/table>(\s*)/siU", create_function('$matches', 'return $matches[1] ."<style type=\"text/css\">td {border: 1px solid #3C3C3C;}</style><table style=\"border-collapse:collapse;background-color:#F5F5F5;border:2px solid #3C3C3C;margin-bottom: 15px;text-align:center;\">". $matches[3] ."</table>" . $matches[4];'), $content
+);
+
 $postOutput = $content;
+
 //	$postOutput = apply_filters('the_content',$content);
 //	$postOutput = preg_replace('/<img[^>]+./','', $content);
 // add a page
@@ -200,20 +262,32 @@ $html_title = '<h1 style="text-align:center;">' . $objPost->post_title . '</h1>'
 //$pdf->writeHTMLCell(0, 0, '', '', $html_title, 0, 0, 0, true, 'C', true);
 $html_author = '<strong style="text-align:right;">' . $objPost->post_date . ' By ' . $strAuthor . '</strong>';
 //$pdf->writeHTMLCell(0, 0, '', '', $html_author, 0, 0, 0, false, 'R', true);
-//$strHtml = wpautop( $html_title. $html_author .'<br/><br/>' . $postOutput .'<br/><br/>', true);
+$strHtml = wpautop($html_title . $html_author . '<br/><br/>' . $postOutput . '<br/><br/>', true);
 /**
  * @todo to this in a replace callback function,below code may cause the content changed.
  */
 $strHTML = str_replace(array('<br/><br/>', '<br/><br/><br/>', '<br/><br/><br/><br/>'), array('<br/>', '<br/>', '<br/>'), $strHTML);
-$strHtml = $html_title . $html_author . '<br/><br/>' . $postOutput . '<br/><br/>';
-
+//$strHtml = $html_title . $html_author . '<br/><br/>' . $postOutput . '<br/><br/>';
+//-------------------------------------------------------------
+//return the codeblock
+$code_blocks_found = dap_codeblock_callback::get_code_block();
+//var_dump($code_blocks_found);exit;
+$code_blocks_num = count($code_blocks_found);
+if ($code_blocks_num > 0)
+{
+	foreach ($code_blocks_found as $key => $value)
+	{
+		$strHtml = str_replace($key, $value, $strHtml);
+	}
+}
+//OK ,done let's generate the PDF
 // Print text using writeHTMLCell()
 $pdf->writeHTMLCell($w = 0, $h = 0, $x = '', $y = '', $strHtml, $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
 
 //Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License
-$copy_right = $use_cc ? sprintf(__('<h2 style="color:red;"><strong>Copyright</strong> :</h2>All this contents are published under <a style="color:red;" href="http://creativecommons.org/licenses/by-nc-sa/2.5/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License</a>. <br />for reproduced, please specify from this website <a  style="color:green;" target="_blank" href="%s"><strong>%s</strong></a> AND give the URL.<br />Article link：<a href="%s">%s</a><br/>',  hacklog_dap::plugin_domain),home_url('/'),get_bloginfo('name'),$strPermalink,$strShortlink ) : '';
+$copy_right = $use_cc ? sprintf(__('<h2 style="color:red;"><strong>Copyright</strong> :</h2>All this contents are published under <a style="color:red;" href="http://creativecommons.org/licenses/by-nc-sa/2.5/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License</a>. <br />for reproduced, please specify from this website <a  style="color:green;" target="_blank" href="%s"><strong>%s</strong></a> AND give the URL.<br />Article link：<a href="%s">%s</a><br/>', hacklog_dap::plugin_domain), home_url('/'), get_bloginfo('name'), $strPermalink, $strShortlink) : '';
 
-if ('' != $copy_right) 
+if ('' != $copy_right)
 {
 	//cc
 	// set color for background

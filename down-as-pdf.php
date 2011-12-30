@@ -4,7 +4,7 @@
   Plugin URI: http://ihacklog.com/?p=3771
   Description: This plugin generates PDF documents for visitors when you click the "<strong>Download as PDF</strong>" button below the post. Very useful if you plan to share your posts in PDF format.You can replace the logo file <strong>logo.png</strong>under <strong>wp-content/plugins/down-as-pdf/images/</strong> with your own.
   Author: <a href="http://www.ihacklog.com" target="_blank" >荒野无灯</a>
-  Version: 2.2.0
+  Version: 2.2.1
   Author URI: http://www.ihacklog.com
  */
 
@@ -23,12 +23,14 @@
 
 /**
  * @TODO add font select option
+ * @TODO add PDF_IMAGE_SCALE_RATIO option (default is 1.25 now)
  * @todo switch between Text logo and Image logo,and make logo configurable
  * @todo make license option configurable
  */
 
 class hacklog_dap {
 	const plugin_domain = 'down-as-pdf';
+	const default_font = 'droidsansfallback';
 	private static $plugin_dir = '';
 
 	public static function init() 
@@ -49,6 +51,24 @@ class hacklog_dap {
 	public static function get_plugin_dir()
 	{
 		return self::$plugin_dir;
+	}
+
+	/**
+	 * type => name
+	 * @return type 
+	 */
+	public static function get_default_fonts()
+	{
+		return array(
+		'droidsansfallback'=>'droidsansfallback',
+		'msungstdlight'=>'msungstdlight',
+		'stsongstdlight'=>'stsongstdlight',
+			'cid0cs'=>'cid0cs',
+			'cid0ct'=>'cid0ct',
+			'cid0jp'=>'cid0jp',
+			'cid0kr'=>'cid0kr',
+			'dejavusans'=>'dejavusans',
+		);
 	}
 
 	public static function admin_notice() {
@@ -85,6 +105,7 @@ class hacklog_dap {
 			'show_in' => 'post',
 			'main_font_size' => 11,
 			'enable_font_subsetting' => 1,
+			'font'=>self::default_font,
 			'use_cc' => 1,
 		);
 		add_option('down_as_pdf_options', $default_options);
@@ -99,7 +120,7 @@ class hacklog_dap {
 			if ($handle = @opendir($cache_dir)) {
 				while (false !== ( $file = readdir($handle))) {
 					if ('.' != $file && '..' != $file && !is_dir($file)) {
-						@unlink($file);
+						@unlink($cache_dir .'/'. $file);
 					}
 				}
 				closedir($handle);
@@ -123,14 +144,20 @@ class hacklog_dap {
 		load_textdomain(self::plugin_domain, $mofile);
 	}
 
-	public static function add_link($strContent) {
+	public static function add_link($strContent) 
+	{
+		//DO NOT display the button at index , archive ,category page.
+		if( !is_singular() )
+		{
+			return $strContent;
+		}
 		global $post;
 		$down_as_pdf_options = get_option('down_as_pdf_options');
 //    global $wp_query;  //$wp_query->post->ID
 		if (in_array($post->post_type, array($down_as_pdf_options['show_in'])) || 'post,page' == $down_as_pdf_options['show_in']) {
 			if (!is_feed()) {
 				$strHtml = '<div id="downaspdf">
-                    <a title="' . __('Download this article as PDF', self::plugin_domain) . '" href="' . get_bloginfo('wpurl') . '/wp-content/plugins/down-as-pdf/generate.php?id=' . $post->ID . '">
+                    <a title="' . __('Download this article as PDF', self::plugin_domain) . '" href="' . get_bloginfo('wpurl') . '/wp-content/plugins/down-as-pdf/generate.php?id=' . $post->ID . '" rel="external nofollow">
                       <span>' . stripslashes($down_as_pdf_options['linktext']) . '</span>
                     </a>
                 </div>';
@@ -176,6 +203,16 @@ class hacklog_dap {
 
 			$options['download_type'] = $_POST['download_type'];
 
+			$_POST['font'] = trim($_POST['font']);
+			if( in_array($_POST['font'], array_keys(self::get_default_fonts())) )
+			{
+				$options['font'] = $_POST['font'];
+			}
+			else
+			{
+				$options['font'] = self::default_font;
+			}
+			
 			// update download type
 			if (!isset($_POST['enable_font_subsetting'])) {
 				$_POST['enable_font_subsetting'] = 1;
@@ -216,6 +253,7 @@ class hacklog_dap {
 		$strMainFontSize = stripslashes($down_as_pdf_options['main_font_size']);
 		$strEnableFontSubsetting = stripslashes($down_as_pdf_options['enable_font_subsetting']);
 		$str_use_cc = stripslashes($down_as_pdf_options['use_cc']);
+		$current_font = stripslashes($down_as_pdf_options['font']);
 		// display options
 		?>
 
@@ -264,6 +302,31 @@ class hacklog_dap {
 						</td>
 					</tr>
 
+					<tr>
+						<th scope="row" valign="top">
+							<label for="dap_font"><?php _e('Main Font', self::plugin_domain); ?>:</label>
+						</th>
+						<td>
+							<select name="font" id="dap_font">
+								<?php
+								$default_fonts = self::get_default_fonts();
+								foreach( $default_fonts as $font_type => $font_name )
+								{
+									if( $current_font == $font_type)
+									{
+										$selected = ' selected="selected"';
+									}
+									else
+									{
+										$selected = '';
+									}
+									echo "<option value='{$font_type}' {$selected} >{$font_name}</option>\n";
+								}
+								?>
+							</select>
+						</td>
+					</tr>
+					
 					<tr>
 						<th scope="row" valign="top">
 		<?php _e('Main font size', self::plugin_domain); ?>:

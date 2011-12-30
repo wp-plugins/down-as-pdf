@@ -116,7 +116,7 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 	/**
 	 * document creator
 	 */
-	define ('PDF_CREATOR', 'TCPDF');
+	define ('PDF_CREATOR', 'iHacklog Down As PDF plugin[thanks to TCPDF]');
 
 	/**
 	 * document author
