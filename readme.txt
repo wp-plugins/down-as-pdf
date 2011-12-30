@@ -45,6 +45,7 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 * added: font selection option
 * changed: only show download button in singular pages.
 * changed: formated table and block HTML block
+* improved: added backtrace action to help to detect the error.
 
 = 2.2.0 =
 * fixed: bug when generating PDF for some articles,some words are lost.
