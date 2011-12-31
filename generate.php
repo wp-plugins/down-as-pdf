@@ -293,25 +293,23 @@ $content = preg_replace_callback(
 
 //format table
 $content = preg_replace_callback(
-		"/(\s*)<table\s*([^>]*)>(.*)<\/table>(\s*)/siU", create_function('$matches', 'return $matches[1] ."<style type=\"text/css\">td {border: 1px solid #3C3C3C;}</style><table style=\"border-collapse:collapse;background-color:#F5F5F5;border:2px solid #3C3C3C;margin-bottom: 15px;text-align:center;\">". $matches[3] ."</table>" . $matches[4];'), $content
+		"/(\s*)<table\s*([^>]*)>/i", create_function('$matches', 'return $matches[1] ."<table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" style=\"border-collapse:collapse;background-color:#F5F5F5;border:1px solid #2C2C2C;margin-bottom: 15px;text-align:center;\">";'), $content
 );
+$content = str_replace(array('</table>','</TABLE>'),'</table><br /><br />',$content);
 
 $postOutput = $content;
 
 //$postOutput = apply_filters('the_content',$content);
-//$postOutput = preg_replace('/<img[^>]+./','', $content);
-// add a page
+
 // ---------------------------------------------------------
 
 $html_title = '<h1 style="text-align:center;">' . $objPost->post_title . '</h1>';
 //$pdf->writeHTMLCell(0, 0, '', '', $html_title, 0, 0, 0, true, 'C', true);
 $html_author = '<strong style="text-align:right;">' . $objPost->post_date . ' By ' . $strAuthor . '</strong>';
 //$pdf->writeHTMLCell(0, 0, '', '', $html_author, 0, 0, 0, false, 'R', true);
+$postOutput = str_replace(array('<br/><br/>', '<br/><br/><br/>', '<br/><br/><br/><br/>'), array('<br/>', '<br/>', '<br/>'), $postOutput);
+
 $strHtml = wpautop($html_title . $html_author . '<br/><br/>' . $postOutput . '<br/><br/>', true);
-/**
- * @todo to this in a replace callback function,below code may cause the content changed.
- */
-$strHTML = str_replace(array('<br/><br/>', '<br/><br/><br/>', '<br/><br/><br/><br/>'), array('<br/>', '<br/>', '<br/>'), $strHTML);
 //$strHtml = $html_title . $html_author . '<br/><br/>' . $postOutput . '<br/><br/>';
 //-------------------------------------------------------------
 //return the codeblock

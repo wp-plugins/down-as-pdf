@@ -4,7 +4,7 @@ Donate link: http://ihacklog.com/donate
 Tags: download, pdf,document
 Requires at least: 3.2.1
 Tested up to: 3.3
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 
 This plugin generates PDF documents for visitors when they click the "<strong>Download as PDF</strong>" button below the post. 
 
@@ -13,6 +13,8 @@ This plugin generates PDF documents for visitors when they click the "<strong>Do
 Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-content/plugins/down-as-pdf/images/</strong> with your own.
 注意：请将<strong>wp-content/plugins/down-as-pdf/images/</strong>目录下面的<strong>logo.png</strong>文件替换成你自己网站的logo
 
+
+* 中文介绍请到[插件主页](http://ihacklog.com/?p=3771 "插件主页") 
 
 == Installation ==
 
@@ -41,6 +43,8 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 == Changelog ==
 = 2.2.2 =
 * enabled Disk cache by default,added more English language country fonts.
+* added "clear cache" button
+* TCPDF Lib upgraded to  5.9.142
 
 = 2.2.1 =
 * added: Janpanese , Korean ,and Traditional Chinese support.

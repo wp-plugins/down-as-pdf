@@ -25,6 +25,7 @@
  * @TODO custom fonts add @see http://www.tcpdf.org/fonts.php
  * @TODO TCPDF uses cURL to get remote server images,if have time,modify it to WP HTTP lib
  * @TODO add PDF_IMAGE_SCALE_RATIO option (default is 1.25 now)
+ * @TODO HTML table caption bug (TCPDF)
  * @todo switch between Text logo and Image logo,and make logo configurable
  * @todo make license content option configurable
  */
@@ -62,16 +63,16 @@ class hacklog_dap {
 	{
 		return array(
 		'droidsansfallback'=>'droidsansfallback',
-		'msungstdlight'=>'msungstdlight',
-		'stsongstdlight'=>'stsongstdlight',
-			'cid0cs'=>'cid0cs',
-			'cid0ct'=>'cid0ct',
-			'cid0jp'=>'cid0jp',
-			'cid0kr'=>'cid0kr',
-			'dejavusans'=>'dejavusans',
-			'courier'=>'Courier',
-			'helvetica'=>'Helvetica',
-			'times'=>'Times New Roman',
+			'msungstdlight'=>'msungstdlight',
+		   'stsongstdlight'=>'stsongstdlight',
+			       'cid0cs'=>'cid0-Simplified Chinese',
+				   'cid0ct'=>'cid0-Traditional Chinese',
+				   'cid0jp'=>'cid0-Japanese',
+				   'cid0kr'=>'cid0-Korean',
+			   'dejavusans'=>'DejaVu Sans',
+				  'courier'=>'Courier',
+				'helvetica'=>'Helvetica',
+		   		    'times'=>'Times New Roman',
 		);
 	}
 
@@ -120,8 +121,10 @@ class hacklog_dap {
 	public static function clear_cache_daily() {
 		$cache_dir = WP_PLUGIN_DIR . '/down-as-pdf/cache';
 		// do something every day
-		if (is_dir($cache_dir)) {
-			if ($handle = @opendir($cache_dir)) {
+		if (is_dir($cache_dir)) 
+		{
+			if ( ($handle = @opendir($cache_dir)) != FALSE )
+			{
 				while (false !== ( $file = readdir($handle))) {
 					if ('.' != $file && '..' != $file && !is_dir($file)) {
 						@unlink($cache_dir .'/'. $file);
@@ -130,6 +133,34 @@ class hacklog_dap {
 				closedir($handle);
 			}
 		}
+	}
+	
+	public static function format_size($size) 
+	{
+      $sizes = array(" Bytes", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB");
+      if ($size == 0) { return('n/a'); } else {
+      return (round($size/pow(1024, ($i = floor(log($size, 1024)))), 2) . $sizes[$i]); }
+	}
+	public static function get_cache_size()
+	{
+		$cache_dir = WP_PLUGIN_DIR . '/down-as-pdf/cache';
+		$size = 0;
+		// do something every day
+		if (is_dir($cache_dir)) 
+		{
+			if ( ($handle = @opendir($cache_dir)) != FALSE )
+			{
+				while (false !== ( $file = readdir($handle))) 
+				{
+					if ('.' != $file && '..' != $file && !is_dir($file)) 
+					{
+						$size += filesize($cache_dir .'/'. $file);
+					}
+				}
+				closedir($handle);
+			}
+		}
+		return $size;
 	}
 
 	public static function deactivate_hook() {
@@ -191,6 +222,11 @@ class hacklog_dap {
 
 // The admin page
 	public static function admin_page() {
+		if( isset($_GET['do_act']))
+		{
+			self::clear_cache_daily();
+			self::show_message(__("Cache cleared."));
+		}
 		// update options in db if requested
 		if ($_POST['Submit']) {
 			// update linktext
@@ -395,6 +431,13 @@ class hacklog_dap {
 			</div>
 
 		</form>
+
+		<p style="font-size:14px;font-family: Georgia,Monaco,serif,Helvetica;">
+		<?php
+		echo sprintf(__('Current total cache size: <strong>%s</strong>', self::plugin_domain), self::format_size(self::get_cache_size()) );
+		?>
+			<a href="<?php echo $_SERVER['REQUEST_URI'];?>&do_act=clear_cache" class="button"><?php _e('Clear cache',self::plugin_domain);?></a>
+		</p>
 		<p style="font-size:14px;font-family: Georgia,Monaco,serif,Helvetica;">
 		<?php
 		require_once self::$plugin_dir . 'tcpdf/tcpdf.php';

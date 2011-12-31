@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Down As PDF v2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-30 20:24+0800\n"
-"PO-Revision-Date: 2011-12-30 20:24+0800\n"
+"POT-Creation-Date: 2011-12-31 09:48+0800\n"
+"PO-Revision-Date: 2011-12-31 09:48+0800\n"
 "Last-Translator: 荒野无灯 <admin@ihacklog.com>\n"
 "Language-Team: 荒野无灯 <admin@ihacklog.com>\n"
 "MIME-Version: 1.0\n"
@@ -16,128 +16,141 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-SearchPath-0: D:\\htdocs\\wordpress\\wp-content\\plugins\\down-as-pdf\n"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:76
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:80
 #, php-format
 msgid "Error:%s is not writable!"
 msgstr "错误:%s 没有写入权限!"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:103
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:194
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:107
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:233
 msgid "Download as PDF"
 msgstr "下载PDF文档"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:160
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:194
 msgid "Download this article as PDF"
 msgstr "下载此文章的 PDF 文档"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:165
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:199
 #, php-format
 msgid "Note: To download this article as PDF, please visit <a href=\"%s\">this post</a> to download the file."
 msgstr "Note: 要下载此文为PDF文档, 请访问 <a href=\"%s\">原文</a>下载。"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:245
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:227
+msgid "Cache cleared."
+msgstr "缓存成功清除。"
+
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:284
 msgid "Saved changes."
 msgstr "保存"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:263
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:302
 msgid "Down as PDF Options"
 msgstr "Down as PDF 选项"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:268
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:307
 msgid "Link text"
 msgstr "链接文字"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:277
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:316
 msgid "Download type"
 msgstr "下载类型"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:282
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:321
 msgid "Show in browser window"
 msgstr "在浏览器中显示"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:284
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:323
 msgid "Force download"
 msgstr "下载"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:291
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:330
 msgid "Place to show the button"
 msgstr "要在哪里显示下载按钮"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:296
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:335
 msgid "Post"
 msgstr "日志"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:298
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:337
 msgid "Page"
 msgstr "页面"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:300
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:339
 msgid "Both Post and Page"
 msgstr "文章和页面"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:307
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:346
 msgid "Main Font"
 msgstr "字体"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:332
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:371
 msgid "Main font size"
 msgstr "字体大小"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:356
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:395
 msgid "Font Subsetting"
 msgstr "嵌入字体子集"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:361
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:400
 msgid "enable"
 msgstr "启用"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:363
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:402
 msgid "disable"
 msgstr "禁用"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:365
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:404
 msgid "enable font subsetting can reduce the size of the PDF file created but that is very slow and requires a lot of memory."
 msgstr "启用嵌入字体子集可以减小生成的PDF文档的大小但是这会使得生成PDF的速度变得很慢而且会消耗很多的内存。"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:372
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:411
 msgid "Use CC license ?"
 msgstr "使用CC协议？"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:377
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:416
 msgid "Yes"
 msgstr "是"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:379
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:418
 msgid "No"
 msgstr "否"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:388
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:427
 msgid "Save Changes"
 msgstr "保存"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:399
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:436
+#, php-format
+msgid "Current total cache size: <strong>%s</strong>"
+msgstr "当前缓存总量: <strong>%s</strong>"
+
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:438
+msgid "Clear cache"
+msgstr "清空缓存"
+
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:445
 #, php-format
 msgid "Current TCPDF Version: <strong>%s</strong>"
 msgstr "当前 TCPDF 版本: <strong>%s</strong>"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:32
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:77
 msgid "Error: header already sent! Please contact the site administrator to solve this problem."
 msgstr "错误：HTTP头部信息已经发送！请联系网站管理员解决此问题。"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:41
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:48
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:87
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:95
 msgid "Please do not leech."
 msgstr "请从本站下载。"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:59
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:107
 msgid "OOPS!Post does not exists."
 msgstr "Oh,No!日志不存在！"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:83
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:132
 msgid "Oh,No! What are U doing?"
 msgstr "Oh,No!你想干神马？"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:217
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:335
 #, php-format
 msgid "<h2 style=\"color:red;\"><strong>Copyright</strong> :</h2>All this contents are published under <a style=\"color:red;\" href=\"http://creativecommons.org/licenses/by-nc-sa/2.5/\" target=\"_blank\">Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License</a>. <br />for reproduced, please specify from this website <a  style=\"color:green;\" target=\"_blank\" href=\"%s\"><strong>%s</strong></a> AND give the URL.<br />Article link：<a href=\"%s\">%s</a><br/>"
 msgstr "<h2 style=\"color:red;\"><strong>版权声明</strong> :</h2>本站遵循 <a style=\"color:red;\" href=\"http://creativecommons.org/licenses/by-nc-sa/2.5/cn/\" target=\"_blank\"> 署名-非商业性使用-相同方式共享 2.5</a> 共享协议. <br />转载请注明转自<a  style=\"color:green;\" target=\"_blank\" href=\"%s\"><strong>%s</strong></a>并标明URL.<br />本文链接：<a href=\"%s\">%s</a><br/>"
