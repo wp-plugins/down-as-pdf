@@ -4,7 +4,7 @@ Donate link: http://ihacklog.com/donate
 Tags: download, pdf,document
 Requires at least: 3.2.1
 Tested up to: 3.3
-Stable tag: 2.2.5
+Stable tag: 2.2.6
 
 This plugin generates PDF documents for visitors when they click the "<strong>Download as PDF</strong>" button below the post. 
 
@@ -41,6 +41,9 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 
 
 == Changelog ==
+
+= 2.2.6 =
+* added: memory limit and time limit php ini settings
 
 = 2.2.5 =
 * added: show backtrace to Administrator

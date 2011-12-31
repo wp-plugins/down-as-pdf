@@ -121,6 +121,12 @@ if (!current_user_can('manage_options'))
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+// maximum execution time in seconds
+@set_time_limit(300);
+//memory linit 128M
+@ini_set('memory_limit', 1024 * 1024 * 128);
+
 $down_as_pdf_options = get_option('down_as_pdf_options');
 $download_type = stripslashes($down_as_pdf_options['download_type']);
 $show_in = stripslashes($down_as_pdf_options['show_in']);

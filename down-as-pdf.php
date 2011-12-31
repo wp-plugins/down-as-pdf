@@ -4,7 +4,7 @@
   Plugin URI: http://ihacklog.com/?p=3771
   Description: This plugin generates PDF documents for visitors when you click the "<strong>Download as PDF</strong>" button below the post. Very useful if you plan to share your posts in PDF format.You can replace the logo file <strong>logo.png</strong>under <strong>wp-content/plugins/down-as-pdf/images/</strong> with your own.
   Author: <a href="http://www.ihacklog.com" target="_blank" >荒野无灯</a>
-  Version: 2.2.5
+  Version: 2.2.6
   Author URI: http://www.ihacklog.com
  */
 
