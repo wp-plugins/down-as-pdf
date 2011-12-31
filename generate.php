@@ -107,10 +107,11 @@ if (!$objPost)
 	wp_die(__('OOPS! Post does not exists.', hacklog_dap::plugin_domain));
 }
 //if private or password protected
-if ( post_password_required($objPost) ) 
+if ( post_password_required($objPost) && !current_user_can('manage_options') ) 
 {
 	wp_die(__('OOPS! This post is password protected.', hacklog_dap::plugin_domain));
 }
+
 if(isset($objPost->post_status) && 'publish' != $objPost->post_status )
 {
 	wp_die(__('OOPS! This post is currently not published.', hacklog_dap::plugin_domain));
