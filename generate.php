@@ -169,13 +169,13 @@ if ($tags_arr)
 	$tags = implode(',', $t);
 }
 // create new PDF document
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
-				false, false);
+$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, TRUE, 'UTF-8',
+				TRUE, FALSE);
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor($strAuthor . ' ' . $admin_email);
 $pdf->SetTitle($objPost->post_title . get_option('blogname'));
-$pdf->SetSubject(get_the_category_list(',', '', $post_id));
+$pdf->SetSubject(strip_tags(get_the_category_list(',', '', $post_id)));
 $pdf->SetKeywords($tags);
 // set default header data
 $max_title_len = 40;
@@ -231,6 +231,9 @@ $pdf->SetDefaultMonospacedFont($main_font);
 $pdf->AddPage();
 $content = $objPost->post_content;
 
+/**
+ * class for handling code , pre , cc block
+ */
 class dap_codeblock_callback
 {
 
@@ -295,8 +298,8 @@ $content = preg_replace_callback(
 
 $postOutput = $content;
 
-//	$postOutput = apply_filters('the_content',$content);
-//	$postOutput = preg_replace('/<img[^>]+./','', $content);
+//$postOutput = apply_filters('the_content',$content);
+//$postOutput = preg_replace('/<img[^>]+./','', $content);
 // add a page
 // ---------------------------------------------------------
 

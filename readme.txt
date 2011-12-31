@@ -39,6 +39,8 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 
 
 == Changelog ==
+= 2.2.2 =
+* enabled Disk cache by default,added more English language country fonts.
 
 = 2.2.1 =
 * added: Janpanese , Korean ,and Traditional Chinese support.

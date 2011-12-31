@@ -4,7 +4,7 @@
   Plugin URI: http://ihacklog.com/?p=3771
   Description: This plugin generates PDF documents for visitors when you click the "<strong>Download as PDF</strong>" button below the post. Very useful if you plan to share your posts in PDF format.You can replace the logo file <strong>logo.png</strong>under <strong>wp-content/plugins/down-as-pdf/images/</strong> with your own.
   Author: <a href="http://www.ihacklog.com" target="_blank" >荒野无灯</a>
-  Version: 2.2.1
+  Version: 2.2.2
   Author URI: http://www.ihacklog.com
  */
 
@@ -22,10 +22,11 @@
  */
 
 /**
- * @TODO add font select option
+ * @TODO custom fonts add @see http://www.tcpdf.org/fonts.php
+ * @TODO TCPDF uses cURL to get remote server images,if have time,modify it to WP HTTP lib
  * @TODO add PDF_IMAGE_SCALE_RATIO option (default is 1.25 now)
  * @todo switch between Text logo and Image logo,and make logo configurable
- * @todo make license option configurable
+ * @todo make license content option configurable
  */
 
 class hacklog_dap {
@@ -68,6 +69,9 @@ class hacklog_dap {
 			'cid0jp'=>'cid0jp',
 			'cid0kr'=>'cid0kr',
 			'dejavusans'=>'dejavusans',
+			'courier'=>'Courier',
+			'helvetica'=>'Helvetica',
+			'times'=>'Times New Roman',
 		);
 	}
 
