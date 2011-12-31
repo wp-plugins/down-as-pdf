@@ -42,6 +42,9 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 
 == Changelog ==
 
+= 2.2.4 =
+* fixed: allow Administrator to download private posts as PDF
+
 = 2.2.3 =
 * added: password protected posts and not published posts checking
 * added: custom font adding tool( upload font file to <strong>wp-content/plugins/down-as-pdf/cache/</strong> and then ,via addf.php?font=the-font-filename.ttf )

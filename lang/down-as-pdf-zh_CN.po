@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Down As PDF v2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-31 11:48+0800\n"
-"PO-Revision-Date: 2011-12-31 11:48+0800\n"
+"POT-Creation-Date: 2011-12-31 12:11+0800\n"
+"PO-Revision-Date: 2011-12-31 12:12+0800\n"
 "Last-Translator: 荒野无灯 <admin@ihacklog.com>\n"
 "Language-Team: 荒野无灯 <admin@ihacklog.com>\n"
 "MIME-Version: 1.0\n"
@@ -161,23 +161,22 @@ msgid "Please do not leech."
 msgstr "请从本站下载。"
 
 #: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:107
-#, fuzzy
 msgid "OOPS! Post does not exists."
-msgstr "Oh,No!日志不存在！"
+msgstr "Oh,No! 日志不存在！"
 
 #: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:112
 msgid "OOPS! This post is password protected."
 msgstr ""
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:116
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:117
 msgid "OOPS! This post is currently not published."
 msgstr ""
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:141
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:142
 msgid "Oh,No! What are U doing?"
 msgstr "Oh,No!你想干神马？"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:357
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:358
 #, php-format
 msgid "<h2 style=\"color:red;\"><strong>Copyright</strong> :</h2>All this contents are published under <a style=\"color:red;\" href=\"http://creativecommons.org/licenses/by-nc-sa/2.5/\" target=\"_blank\">Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License</a>. <br />for reproduced, please specify from this website <a  style=\"color:green;\" target=\"_blank\" href=\"%s\"><strong>%s</strong></a> AND give the URL.<br />Article link：<a href=\"%s\">%s</a><br/>"
 msgstr "<h2 style=\"color:red;\"><strong>版权声明</strong> :</h2>本站遵循 <a style=\"color:red;\" href=\"http://creativecommons.org/licenses/by-nc-sa/2.5/cn/\" target=\"_blank\"> 署名-非商业性使用-相同方式共享 2.5</a> 共享协议. <br />转载请注明转自<a  style=\"color:green;\" target=\"_blank\" href=\"%s\"><strong>%s</strong></a>并标明URL.<br />本文链接：<a href=\"%s\">%s</a><br/>"
