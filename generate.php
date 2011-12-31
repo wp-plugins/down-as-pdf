@@ -104,7 +104,16 @@ $objPost = get_post($post_id);
 //check if post exists
 if (!$objPost)
 {
-	wp_die(__('OOPS!Post does not exists.', hacklog_dap::plugin_domain));
+	wp_die(__('OOPS! Post does not exists.', hacklog_dap::plugin_domain));
+}
+//if private or password protected
+if ( post_password_required($objPost) ) 
+{
+	wp_die(__('OOPS! This post is password protected.', hacklog_dap::plugin_domain));
+}
+if(isset($objPost->post_status) && 'publish' != $objPost->post_status )
+{
+	wp_die(__('OOPS! This post is currently not published.', hacklog_dap::plugin_domain));
 }
 
 $down_as_pdf_options = get_option('down_as_pdf_options');
@@ -169,8 +178,8 @@ if ($tags_arr)
 	$tags = implode(',', $t);
 }
 // create new PDF document
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, TRUE, 'UTF-8',
-				TRUE, FALSE);
+//disable Disk caching ,for it may takes more than 60s to handle a post.
+$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, TRUE, 'UTF-8',FALSE, FALSE);
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor($strAuthor . ' ' . $admin_email);
@@ -276,26 +285,42 @@ class dap_codeblock_callback
 }
 
 //for codecolorer plugin
+if( strpos($content,'[/cc]') !== FALSE )
+{
 $content = preg_replace_callback('#(\s*)\[cc([^\s\]_]*(?:_[^\s\]]*)?)([^\]]*)\](.*?)\[/cc\2\](\s*)#si', 'dap_codeblock_callback::codecolorer_plugin_callback', $content);
+}
 
 //for code tag
+if( strpos($content,'</code>') !== FALSE )
+{
 $content = preg_replace_callback(
 		'#(\s*)\<code(.*?)\>(.*?)\</code\>(\s*)#si', 'dap_codeblock_callback::code_tag_callback', $content);
-
+}
 //for wp-syntax plugin pre tag
+if( strpos($content,'</pre>') !== FALSE )
+{
 $content = preg_replace_callback(
 		"/(\s*)<pre(?:lang=[\"']([\w-]+)[\"']|line=[\"'](\d*)[\"']|escaped=[\"'](true|false)?[\"']|\s)+>(.*)<\/pre>(\s*)/siU", 'dap_codeblock_callback::wp_syntax_plugin_callback', $content
 );
+}
+
 //blockquote  #F0F0F0  #F5F5F5; border: 1px solid #DADADA; color:#555555;
+
+if( strpos($content,'</blockquote>') !== FALSE )
+{
 $content = preg_replace_callback(
 		"/(\s*)<blockquote\s*>(.*)<\/blockquote>(\s*)/siU", create_function('$matches', 'return $matches[1] ."<div style=\"word-wrap:break-word;color:#000000;background-color: #F5F5F5;border: 1px solid #DADADA;\">". $matches[2] ."</div>" . $matches[3];'), $content
 );
-
+}
 //format table
+
+if( strpos($content,'</table>') !== FALSE )
+{
 $content = preg_replace_callback(
 		"/(\s*)<table\s*([^>]*)>/i", create_function('$matches', 'return $matches[1] ."<table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" style=\"border-collapse:collapse;background-color:#F5F5F5;border:1px solid #2C2C2C;margin-bottom: 15px;text-align:center;\">";'), $content
 );
 $content = str_replace(array('</table>','</TABLE>'),'</table><br /><br />',$content);
+}
 
 $postOutput = $content;
 
@@ -323,6 +348,7 @@ if ($code_blocks_num > 0)
 		$strHtml = str_replace($key, $value, $strHtml);
 	}
 }
+
 //OK ,done let's generate the PDF
 // Print text using writeHTMLCell()
 $pdf->writeHTMLCell($w = 0, $h = 0, $x = '', $y = '', $strHtml, $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
@@ -341,6 +367,7 @@ if ('' != $copy_right)
 	// MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
 }
 // ---------------------------------------------------------
+//var_dump(timer_stop(0, 3));exit;
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
 $pdf->Output($objPost->post_name . '.pdf', $download_type);

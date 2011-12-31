@@ -4,7 +4,7 @@ Donate link: http://ihacklog.com/donate
 Tags: download, pdf,document
 Requires at least: 3.2.1
 Tested up to: 3.3
-Stable tag: 2.2.2
+Stable tag: 2.2.3
 
 This plugin generates PDF documents for visitors when they click the "<strong>Download as PDF</strong>" button below the post. 
 
@@ -41,6 +41,12 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 
 
 == Changelog ==
+
+= 2.2.3 =
+* added: password protected posts and not published posts checking
+* added: custom font adding tool( upload font file to <strong>wp-content/plugins/down-as-pdf/cache/</strong> and then ,via addf.php?font=the-font-filename.ttf )
+* fixed: disabled Disk caching ,for it may takes more than 60s to handle a post.
+
 = 2.2.2 =
 * enabled Disk cache by default,added more English language country fonts.
 * added "clear cache" button
