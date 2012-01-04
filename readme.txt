@@ -4,7 +4,7 @@ Donate link: http://ihacklog.com/donate
 Tags: download, pdf,document
 Requires at least: 3.2.1
 Tested up to: 3.3.1
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 
 This plugin generates PDF documents for visitors when they click the "<strong>Download as PDF</strong>" button below the post. 
 
@@ -33,6 +33,11 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
   
 
 == Upgrade Notice ==
+= 2.3.1 =
+* 默认开启下载
+
+= 2.3.0 =
+* 默认不开启下载
 
 = 2.2.0 =
 * 请将<strong>wp-content/plugins/down-as-pdf/images/</strong>目录下面的<strong>logo.png</strong>文件替换成你自己网站的logo
@@ -41,8 +46,10 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 
 
 == Changelog ==
+= 2.3.1 =
+* changed: set display download button default.if you'd like to control the button display or not in each post,set `private static $allow_down_default = 1;` to `private static $allow_down_default = 0;`
 
-=2.3.0 =
+= 2.3.0 =
 * changed: added meta value to control if a post is allowed to be downloaded as PDF format.
 * fixed: fix a typo in sprintf function on line 81 in previous version.
 * added: added shortcode support to control the display posistion of the "Download as PDF" button.

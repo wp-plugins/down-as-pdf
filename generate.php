@@ -101,7 +101,7 @@ if (!(in_array($refererhost ['host'], $validReferer)))
 $post_id = 0;
 $post_id = (int) $_GET['id'];
 
-if( 1!= get_post_meta($post_id, hacklog_dap::meta_key ,TRUE))
+if( !hacklog_dap::get_allow_down_default() && 1!= get_post_meta($post_id, hacklog_dap::meta_key ,TRUE))
 {
 	wp_die(__('OOPS! this post is not allowed to be downloaded currently.', hacklog_dap::plugin_domain));
 }

@@ -4,7 +4,7 @@
   Plugin URI: http://ihacklog.com/?p=3771
   Description: This plugin generates PDF documents for visitors when you click the "<strong>Download as PDF</strong>" button below the post. Very useful if you plan to share your posts in PDF format.You can replace the logo file <strong>logo.png</strong>under <strong>wp-content/plugins/down-as-pdf/images/</strong> with your own.
   Author: <a href="http://www.ihacklog.com" target="_blank" >荒野无灯</a>
-  Version: 2.3.0
+  Version: 2.3.1
   Author URI: http://www.ihacklog.com
  */
 
@@ -36,6 +36,7 @@ class hacklog_dap {
 	const short_code = 'pdf_here';
 	const default_font = 'droidsansfallback';
 	private static $plugin_dir = '';
+	private static $allow_down_default = 1;
 
 	public static function init() 
 	{
@@ -50,9 +51,17 @@ class hacklog_dap {
 		add_filter('the_content', array(__CLASS__, 'add_link'));
 		add_action('wp_head', array(__CLASS__, 'custom_css'));
 		add_action('admin_notices', array(__CLASS__, 'admin_notice'));
-		add_action ( 'admin_menu', array(__CLASS__, 'create_meta_box') );
-		add_action ( 'save_post', array(__CLASS__, 'save_custom_fields'), 1, 2 );
+		if( ! self::$allow_down_default )
+		{
+			add_action ( 'admin_menu', array(__CLASS__, 'create_meta_box') );
+			add_action ( 'save_post', array(__CLASS__, 'save_custom_fields'), 1, 2 );
+		}
 //		add_shortcode( 'pdf_here',array(__CLASS__, 'parse_short_code') );
+	}
+	
+	public static function get_allow_down_default()
+	{
+		return self::$allow_down_default;
 	}
 	
 	public static function get_plugin_dir()
@@ -254,7 +263,11 @@ public static function save_custom_fields($post_id, $post) {
 	{
 		global $post;
 		//DO NOT display the button at index , archive ,category page.
-		if( !is_singular() || 1 != get_post_meta($post->ID, '_down_as_pdf',TRUE))
+		if( !is_singular())
+		{
+			return $strContent;
+		}
+		if( ! self::$allow_down_default &&  1 != get_post_meta($post->ID, '_down_as_pdf',TRUE))
 		{
 			return $strContent;
 		}
