@@ -1,10 +1,10 @@
 <?php
 /*
-  Plugin Name: Down As PDF
+  Plugin Name: Hacklog Down As PDF
   Plugin URI: http://ihacklog.com/?p=3771
   Description: This plugin generates PDF documents for visitors when you click the "<strong>Download as PDF</strong>" button below the post. Very useful if you plan to share your posts in PDF format.You can replace the logo file <strong>logo.png</strong>under <strong>wp-content/plugins/down-as-pdf/images/</strong> with your own.
   Author: <a href="http://www.ihacklog.com" target="_blank" >荒野无灯</a>
-  Version: 2.2.6
+  Version: 2.3.0
   Author URI: http://www.ihacklog.com
  */
 
@@ -32,6 +32,8 @@
 
 class hacklog_dap {
 	const plugin_domain = 'down-as-pdf';
+	const meta_key = '_down_as_pdf';
+	const short_code = 'pdf_here';
 	const default_font = 'droidsansfallback';
 	private static $plugin_dir = '';
 
@@ -48,6 +50,9 @@ class hacklog_dap {
 		add_filter('the_content', array(__CLASS__, 'add_link'));
 		add_action('wp_head', array(__CLASS__, 'custom_css'));
 		add_action('admin_notices', array(__CLASS__, 'admin_notice'));
+		add_action ( 'admin_menu', array(__CLASS__, 'create_meta_box') );
+		add_action ( 'save_post', array(__CLASS__, 'save_custom_fields'), 1, 2 );
+//		add_shortcode( 'pdf_here',array(__CLASS__, 'parse_short_code') );
 	}
 	
 	public static function get_plugin_dir()
@@ -78,7 +83,7 @@ class hacklog_dap {
 
 	public static function admin_notice() {
 		if (substr($_SERVER["PHP_SELF"], -11) == 'plugins.php' && function_exists("admin_url") && !self::is_writeable_ACLSafe(self::$plugin_dir . 'cache')) {
-			echo '<div class="error"><p><strong>' . sprintf(__("Error:%s is not writable!", self::$plugin_dir . 'cache', self::plugin_domain)) . '</strong></p></div>';
+			echo '<div class="error"><p><strong>' . sprintf(__("Error:%s is not writable!", self::plugin_domain),self::$plugin_dir . 'cache') . '</strong></p></div>';
 		}
 	}
 
@@ -118,7 +123,73 @@ class hacklog_dap {
 		wp_schedule_event(time(), 'daily', 'dap_clear_cache_daily_event');
 	}
 
-	public static function clear_cache_daily() {
+	public static function parse_short_code($attrs)
+	{
+	}
+	
+	public static function create_meta_box() {
+		$content_types_array = array('post','page');
+		foreach ( $content_types_array as $content_type ) {
+			add_meta_box ( 'downadpdf-custom-fields', _('Hacklog Down as PDF'),array(__CLASS__,'print_custom_fields'), $content_type, 'side', 'low', $content_type );
+	}
+	}
+
+
+public static function print_custom_fields($post, $callback_args = '') 
+		{
+		$content_type = $callback_args ['args']; // the 7th arg from add_meta_box()
+		$output = '';
+		$value = get_post_meta($post->ID, self::meta_key,TRUE);
+		$data = array (
+			'name' => self::meta_key, 
+			'title' => __('is this post allowed to Down as PDF ?',self::plugin_domain), 
+			'description' => __('allow down as PDF',self::plugin_domain),  
+			'options' => array ( array('title'=>'No','value'=>0),array('title'=>'Yes','value'=>1))
+		);
+		$option_str = '';
+		foreach ( $data['options'] as $option ) {
+			$option['value'] = _wp_specialchars( $option['value']); // Filter the values
+			$is_selected = '';
+			if ($value == $option['value']) {
+				$is_selected = 'selected="selected"';
+			}
+			$option_str .= '<option value="' . $option['value'] . '" ' . $is_selected . '>' . $option['title'] . '       </option>';
+		}
+		$output_this_field = sprintf('<label for="%s"><strong>%s</strong></label><br/>
+			<select name="%s" id="%s">
+			%s 
+			</select>',$data['name'],$data['title'],$data['name'],$data['name'],$option_str);
+	
+			// optionally add description
+			if ($field ['description']) {
+				$output_this_field .= '<p>' . $field ['description'] . '</p>';
+			}
+			
+			$output .= '<div class="form-field form-required">' . $output_this_field . '</div>';
+		// Print the form
+		echo '<div class="form-wrap">';
+		//http://codex.wordpress.org/Function_Reference/wp_nonce_field
+//		wp_nonce_field ( 'update_down_as_pdf_fields', 'down_as_pdf_fields_nonce' );
+		echo $output;
+		echo '</div>';
+	
+	}
+
+
+public static function save_custom_fields($post_id, $post) {
+				$custom_fields = array('_down_as_pdf');
+				foreach ( $custom_fields as $field ) {
+					if (isset ( $_POST [$field] )) {
+						$value = trim ( $_POST [$field] );
+						update_post_meta ( $post_id, $field, $value );
+					} // if not set, then it's an unchecked checkbox, so blank out the value.
+				else {
+						update_post_meta ( $post_id, $field, '' );
+					}
+				}
+}
+	public static function clear_cache_daily() 
+	{
 		$cache_dir = WP_PLUGIN_DIR . '/down-as-pdf/cache';
 		// do something every day
 		if (is_dir($cache_dir)) 
@@ -181,16 +252,17 @@ class hacklog_dap {
 
 	public static function add_link($strContent) 
 	{
+		global $post;
 		//DO NOT display the button at index , archive ,category page.
-		if( !is_singular() )
+		if( !is_singular() || 1 != get_post_meta($post->ID, '_down_as_pdf',TRUE))
 		{
 			return $strContent;
 		}
-		global $post;
 		$down_as_pdf_options = get_option('down_as_pdf_options');
 //    global $wp_query;  //$wp_query->post->ID
 		if (in_array($post->post_type, array($down_as_pdf_options['show_in'])) || 'post,page' == $down_as_pdf_options['show_in']) {
-			if (!is_feed()) {
+			if (!is_feed()) 
+			{
 				$strHtml = '<div id="downaspdf">
                     <a title="' . __('Download this article as PDF', self::plugin_domain) . '" href="' . get_bloginfo('wpurl') . '/wp-content/plugins/down-as-pdf/generate.php?id=' . $post->ID . '" rel="external nofollow">
                       <span>' . stripslashes($down_as_pdf_options['linktext']) . '</span>
@@ -199,8 +271,14 @@ class hacklog_dap {
 			} else {
 				$strHtml = sprintf(__('Note: To download this article as PDF, please visit <a href="%s">this post</a> to download the file.', self::plugin_domain), wp_get_shortlink());
 			}
-
-			return $strContent . $strHtml;
+			if(strpos($strContent,'[pdf_here]') !== FALSE )
+			{
+				return str_replace('[pdf_here]',$strHtml,$strContent);
+			}
+			else
+			{
+				return $strContent . $strHtml;
+			}
 		} else {
 			return $strContent;
 		}
@@ -213,7 +291,7 @@ class hacklog_dap {
 //------------------------ wp admin-------------------------
 
 	public static function settings_menu() {
-		add_submenu_page('options-general.php', 'Down as PDF', 'Down as PDF', 'manage_options', 'Down-as-PDF', array(__CLASS__, 'admin_page'));
+		add_submenu_page('options-general.php', 'Hacklog Down as PDF', 'Hacklog Down as PDF', 'manage_options', 'Hacklog-Down-as-PDF', array(__CLASS__, 'admin_page'));
 	}
 
 	public static function show_message($message) {
@@ -300,7 +378,7 @@ class hacklog_dap {
 		<form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
 
 			<div class="wrap">
-				<h2><?php _e('Down as PDF Options', self::plugin_domain); ?></h2>
+				<h2><?php _e('Hacklog Down as PDF Options', self::plugin_domain); ?></h2>
 				<table class="form-table">
 
 					<tr>

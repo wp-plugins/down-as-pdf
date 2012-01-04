@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Down As PDF v2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-31 12:11+0800\n"
-"PO-Revision-Date: 2011-12-31 12:12+0800\n"
+"POT-Creation-Date: 2012-01-04 13:24+0800\n"
+"PO-Revision-Date: 2012-01-04 13:24+0800\n"
 "Last-Translator: 荒野无灯 <admin@ihacklog.com>\n"
 "Language-Team: 荒野无灯 <admin@ihacklog.com>\n"
 "MIME-Version: 1.0\n"
@@ -34,119 +34,131 @@ msgstr ""
 msgid "<p>Good luck,the font <strong>%s</strong> has been added!</p>"
 msgstr ""
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:81
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:86
 #, php-format
 msgid "Error:%s is not writable!"
 msgstr "错误:%s 没有写入权限!"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:108
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:234
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:113
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:312
 msgid "Download as PDF"
 msgstr "下载PDF文档"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:195
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:133
+msgid "Hacklog Down as PDF"
+msgstr "Hacklog Down as PDF"
+
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:145
+msgid "is this post allowed to Down as PDF ?"
+msgstr "此日志是否允许下载PDF?"
+
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:146
+msgid "allow down as PDF"
+msgstr "允许下载本文为PDF文档"
+
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:267
 msgid "Download this article as PDF"
 msgstr "下载此文章的 PDF 文档"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:200
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:272
 #, php-format
 msgid "Note: To download this article as PDF, please visit <a href=\"%s\">this post</a> to download the file."
 msgstr "Note: 要下载此文为PDF文档, 请访问 <a href=\"%s\">原文</a>下载。"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:228
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:306
 msgid "Cache cleared."
 msgstr "缓存成功清除。"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:285
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:363
 msgid "Saved changes."
 msgstr "保存"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:303
-msgid "Down as PDF Options"
-msgstr "Down as PDF 选项"
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:381
+msgid "Hacklog Down as PDF Options"
+msgstr "Hacklog Down as PDF 选项"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:308
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:386
 msgid "Link text"
 msgstr "链接文字"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:317
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:395
 msgid "Download type"
 msgstr "下载类型"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:322
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:400
 msgid "Show in browser window"
 msgstr "在浏览器中显示"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:324
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:402
 msgid "Force download"
 msgstr "下载"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:331
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:409
 msgid "Place to show the button"
 msgstr "要在哪里显示下载按钮"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:336
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:414
 msgid "Post"
 msgstr "日志"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:338
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:416
 msgid "Page"
 msgstr "页面"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:340
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:418
 msgid "Both Post and Page"
 msgstr "文章和页面"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:347
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:425
 msgid "Main Font"
 msgstr "字体"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:372
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:450
 msgid "Main font size"
 msgstr "字体大小"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:396
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:474
 msgid "Font Subsetting"
 msgstr "嵌入字体子集"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:401
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:479
 msgid "enable"
 msgstr "启用"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:403
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:481
 msgid "disable"
 msgstr "禁用"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:405
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:483
 msgid "enable font subsetting can reduce the size of the PDF file created but that is very slow and requires a lot of memory."
 msgstr "启用嵌入字体子集可以减小生成的PDF文档的大小但是这会使得生成PDF的速度变得很慢而且会消耗很多的内存。"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:412
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:490
 msgid "Use CC license ?"
 msgstr "使用CC协议？"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:417
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:495
 msgid "Yes"
 msgstr "是"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:419
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:497
 msgid "No"
 msgstr "否"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:428
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:506
 msgid "Save Changes"
 msgstr "保存"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:437
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:515
 #, php-format
 msgid "Current total cache size: <strong>%s</strong>"
 msgstr "当前缓存总量: <strong>%s</strong>"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:439
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:517
 msgid "Clear cache"
 msgstr "清空缓存"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:446
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/down-as-pdf.php:524
 #, php-format
 msgid "Current TCPDF Version: <strong>%s</strong>"
 msgstr "当前 TCPDF 版本: <strong>%s</strong>"
@@ -160,26 +172,33 @@ msgstr "错误：HTTP头部信息已经发送！请联系网站管理员解决�
 msgid "Please do not leech."
 msgstr "请从本站下载。"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:107
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:105
+msgid "OOPS! this post is not allowed to be downloaded currently."
+msgstr ""
+
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:118
 msgid "OOPS! Post does not exists."
 msgstr "Oh,No! 日志不存在！"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:112
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:126
 msgid "OOPS! This post is password protected."
 msgstr ""
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:117
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:131
 msgid "OOPS! This post is currently not published."
 msgstr ""
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:142
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:163
 msgid "Oh,No! What are U doing?"
 msgstr "Oh,No!你想干神马？"
 
-#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:358
+#: D:\htdocs\wordpress\wp-content\plugins\down-as-pdf/generate.php:378
 #, php-format
 msgid "<h2 style=\"color:red;\"><strong>Copyright</strong> :</h2>All this contents are published under <a style=\"color:red;\" href=\"http://creativecommons.org/licenses/by-nc-sa/2.5/\" target=\"_blank\">Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License</a>. <br />for reproduced, please specify from this website <a  style=\"color:green;\" target=\"_blank\" href=\"%s\"><strong>%s</strong></a> AND give the URL.<br />Article link：<a href=\"%s\">%s</a><br/>"
 msgstr "<h2 style=\"color:red;\"><strong>版权声明</strong> :</h2>本站遵循 <a style=\"color:red;\" href=\"http://creativecommons.org/licenses/by-nc-sa/2.5/cn/\" target=\"_blank\"> 署名-非商业性使用-相同方式共享 2.5</a> 共享协议. <br />转载请注明转自<a  style=\"color:green;\" target=\"_blank\" href=\"%s\"><strong>%s</strong></a>并标明URL.<br />本文链接：<a href=\"%s\">%s</a><br/>"
+
+#~ msgid "Down as PDF Options"
+#~ msgstr "Down as PDF 选项"
 
 #~ msgid "Main options"
 #~ msgstr "主要选项"
