@@ -4,7 +4,7 @@ Donate link: http://ihacklog.com/donate
 Tags: download, pdf,document
 Requires at least: 3.2.1
 Tested up to: 3.3.1
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 
 This plugin generates PDF documents for visitors when they click the "<strong>Download as PDF</strong>" button below the post. 
 
@@ -46,6 +46,10 @@ Note: You can replace the logo file <strong>logo.png</strong>under <strong>wp-co
 
 
 == Changelog ==
+
+= 2.3.2 =
+* updated TCPDF lib to version 5.9.145
+
 = 2.3.1 =
 * changed: set display download button default.if you'd like to control the button display or not in each post,set `private static $allow_down_default = 1;` to `private static $allow_down_default = 0;`
 
