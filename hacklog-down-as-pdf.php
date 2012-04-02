@@ -486,10 +486,10 @@ public static function save_custom_fields($post_id, $post) {
 						</th>
 						<td>
 							<select name="enable_cache">
-								<option value="1" <?php selected( $str_enable_cache, 1, true ); ?> > <?php _e('enable', self::plugin_domain); ?></option>
-								<option value="0" <?php selected( $str_enable_cache, 0, true ); ?> > <?php _e('disable', self::plugin_domain); ?></option>
+								<option value="1" <?php selected( $str_enable_cache, 1, true ); ?> > <?php _e('Yes', self::plugin_domain); ?></option>
+								<option value="0" <?php selected( $str_enable_cache, 0, true ); ?> > <?php _e('No', self::plugin_domain); ?></option>
 							</select>
-							&nbsp; <span class="description"><?php _e('enable font subsetting can reduce the size of the PDF file created but that is very slow and requires a lot of memory.', self::plugin_domain); ?> </span>
+							&nbsp; <span class="description"><?php _e('enable disk cache or not.', self::plugin_domain); ?> </span>
 						</td>
 					</tr>					
 
