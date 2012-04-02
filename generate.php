@@ -111,9 +111,11 @@ if( !hacklog_dap::get_allow_down_default() && 1!= get_post_meta($post_id, hacklo
 //	wp_die(__('<p>:(,Sorry.<br />Currently only logged in user can download.</p>'));
 //}
 
-$objPost = get_post($post_id);
+$post = get_post($post_id);
+setup_postdata($post);
+
 //check if post exists
-if (!$objPost)
+if (!$post)
 {
 	wp_die(__('OOPS! Post does not exists.', hacklog_dap::plugin_domain));
 }
@@ -121,12 +123,12 @@ if (!$objPost)
 if (!current_user_can('manage_options'))
 {
 //if private or password protected
-	if (post_password_required($objPost))
+	if (post_password_required($post))
 	{
 		wp_die(__('OOPS! This post is password protected.', hacklog_dap::plugin_domain));
 	}
 
-	if (isset($objPost->post_status) && 'publish' != $objPost->post_status)
+	if (isset($post->post_status) && 'publish' != $post->post_status)
 	{
 		wp_die(__('OOPS! This post is currently not published.', hacklog_dap::plugin_domain));
 	}
@@ -138,12 +140,13 @@ if (!current_user_can('manage_options'))
 //memory linit 128M
 @ini_set('memory_limit', 1024 * 1024 * 128);
 
-$down_as_pdf_options = get_option('down_as_pdf_options');
+$down_as_pdf_options = get_option( hacklog_dap::opt_name );
 $download_type = stripslashes($down_as_pdf_options['download_type']);
 $show_in = stripslashes($down_as_pdf_options['show_in']);
 $main_font_size = stripslashes($down_as_pdf_options['main_font_size']);
 $enable_font_subsetting = stripslashes($down_as_pdf_options['enable_font_subsetting']);
 $use_cc = stripslashes($down_as_pdf_options['use_cc']);
+$cache = (bool) stripslashes($down_as_pdf_options['cache']);
 
 $subsetting_value = 1 == $enable_font_subsetting ? true : false;
 //'droidsansfallback' OR 'stsongstdlight' OR msungstdlight
@@ -158,7 +161,7 @@ $main_font = $dap_LFConfig->get('font');
 $subsetting_value = $dap_LFConfig->get('font_subsetting');
 
 //only allowed post type can be downloaded
-if (!in_array($objPost->post_type, array($show_in)) && 'post,page' != $show_in)
+if (!in_array($post->post_type, array($show_in)) && 'post,page' != $show_in)
 {
 	wp_die(__('Oh,No! What are U doing?', hacklog_dap::plugin_domain));
 }
@@ -174,9 +177,9 @@ require_once hacklog_dap::get_plugin_dir() . "tcpdf/config/lang/{$lang_file}.php
 require hacklog_dap::get_plugin_dir() . 'tcpdf/tcpdf.php';
 
 //author
-$objAuthor = get_userdata($objPost->post_author);
-$strPermalink = get_permalink($objPost->ID);
-$strShortlink = wp_get_shortlink($objPost->ID);
+$objAuthor = get_userdata($post->post_author);
+$strPermalink = get_permalink($post->ID);
+$strShortlink = home_url('?p=' . $post->ID);;
 $home_url = home_url('/');
 $admin_email = get_option('admin_email');
 if ($objAuthor->display_name)
@@ -190,7 +193,7 @@ else
 //标签  TAGS     
 $t = array();
 $tags = '';
-$tags_arr = wp_get_post_tags($objPost->ID);
+$tags_arr = wp_get_post_tags($post->ID);
 if ($tags_arr)
 {
 	foreach ($tags_arr as $item)
@@ -201,16 +204,16 @@ if ($tags_arr)
 }
 // create new PDF document
 //disable Disk caching ,for it may takes more than 60s to handle a post.
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, TRUE, 'UTF-8', FALSE, FALSE);
+$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, TRUE, 'UTF-8', $cache, FALSE);
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor($strAuthor . ' ' . $admin_email);
-$pdf->SetTitle($objPost->post_title . get_option('blogname'));
+$pdf->SetTitle($post->post_title . get_option('blogname'));
 $pdf->SetSubject(strip_tags(get_the_category_list(',', '', $post_id)));
 $pdf->SetKeywords($tags);
 // set default header data
 $max_title_len = 40;
-$post_title = strip_tags($objPost->post_title);
+$post_title = strip_tags($post->post_title);
 $len = function_exists('mb_strlen') ? mb_strlen($post_title, 'UTF-8') : strlen($post_title);
 $end_str = $len > $max_title_len ? '...' : '';
 $part_title = function_exists('mb_substr') ? mb_substr($post_title, 0, $max_title_len, 'UTF-8') : substr($post_title, 0, $max_title_len);
@@ -260,7 +263,7 @@ $pdf->SetDefaultMonospacedFont($main_font);
 // Add a page
 // This method has several options, check the source code documentation for more information.
 $pdf->AddPage();
-$content = $objPost->post_content;
+$content = $post->post_content;
 
 /**
  * class for handling code , pre , cc block
@@ -349,13 +352,13 @@ $postOutput = $content;
 //$postOutput = apply_filters('the_content',$content);
 // ---------------------------------------------------------
 
-$html_title = '<h1 style="text-align:center;">' . $objPost->post_title . '</h1>';
+$html_title = '<h1 style="text-align:center;">' . $post->post_title . '</h1>';
 //$pdf->writeHTMLCell(0, 0, '', '', $html_title, 0, 0, 0, true, 'C', true);
-$html_author = '<strong style="text-align:right;">' . $objPost->post_date . ' By ' . $strAuthor . '</strong>';
+$html_author = '<strong style="text-align:right;">' . $post->post_date . ' By ' . $strAuthor . '</strong>';
 //$pdf->writeHTMLCell(0, 0, '', '', $html_author, 0, 0, 0, false, 'R', true);
 $postOutput = str_replace(array('<br/><br/>', '<br/><br/><br/>', '<br/><br/><br/><br/>'), array('<br/>', '<br/>', '<br/>'), $postOutput);
 
-$strHtml = wpautop($html_title . $html_author . '<br/><br/>' . $postOutput . '<br/><br/>', true);
+$html_to_write = wpautop($html_title . $html_author . '<br/><br/>' . $postOutput . '<br/><br/>', true);
 //$strHtml = $html_title . $html_author . '<br/><br/>' . $postOutput . '<br/><br/>';
 //-------------------------------------------------------------
 //return the codeblock
@@ -366,16 +369,16 @@ if ($code_blocks_num > 0)
 {
 	foreach ($code_blocks_found as $key => $value)
 	{
-		$strHtml = str_replace($key, $value, $strHtml);
+		$html_to_write = str_replace($key, $value, $html_to_write);
 	}
 }
 
 //OK ,done let's generate the PDF
 // Print text using writeHTMLCell()
-$pdf->writeHTMLCell($w = 0, $h = 0, $x = '', $y = '', $strHtml, $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
+$pdf->writeHTMLCell($w = 0, $h = 0, $x = '', $y = '', $html_to_write, $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = '', $autopadding = true);
 
 //Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License
-$copy_right = $use_cc ? sprintf(__('<h2 style="color:red;"><strong>Copyright</strong> :</h2>All this contents are published under <a style="color:red;" href="http://creativecommons.org/licenses/by-nc-sa/2.5/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License</a>. <br />for reproduced, please specify from this website <a  style="color:green;" target="_blank" href="%s"><strong>%s</strong></a> AND give the URL.<br />Article link：<a href="%s">%s</a><br/>', hacklog_dap::plugin_domain), home_url('/'), get_bloginfo('name'), $strPermalink, $strShortlink) : '';
+$copy_right = $use_cc ? sprintf(__('<h2 style="color:red;"><strong>Copyright</strong> :</h2><br />All this contents are published under <a style="color:red;" href="http://creativecommons.org/licenses/by-nc-sa/2.5/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License</a>.<br />for reproduced, please specify from this website <a style="color:green;" target="_blank" href="%1$s"><strong>%2$s</strong></a> AND give the URL.<br />Article link：<a href="%3$s" target="_blank">%4$s</a><br />', hacklog_dap::plugin_domain), home_url('/'), get_bloginfo('name'), $strPermalink, $strShortlink) : '';
 
 if ('' != $copy_right)
 {
@@ -383,13 +386,11 @@ if ('' != $copy_right)
 	// set color for background
 	$pdf->SetFillColor(255, 255, 127);
 	$pdf->setCellPaddings(5, 5, 0, 0); //L T R B
-	//$pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $txt, $border=0, $ln=1, $fill=0, $reseth=true, $align='C', $autopadding=true);
-	$pdf->MultiCell(180, 5, $copy_right . "\n", 1, 'L', 1, 2, '', '', true, 0, true);
-	// MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
+	$pdf->writeHTMLCell(180, 0 , '', '', $copy_right . "\n", 1, 1 , TRUE , TRUE , 'L', TRUE);
 }
 // ---------------------------------------------------------
 //var_dump(timer_stop(0, 3));exit;
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
-$pdf->Output($objPost->post_name . '.pdf', $download_type);
+$pdf->Output($post->post_name . '.pdf', $download_type);
 // End of file

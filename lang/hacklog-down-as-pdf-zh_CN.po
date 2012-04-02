@@ -1,0 +1,211 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Down As PDF v2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-03-31 21:17+0800\n"
+"PO-Revision-Date: 2012-04-02 12:38+0800\n"
+"Last-Translator: 荒野无灯 <admin@ihacklog.com>\n"
+"Language-Team: 荒野无灯 <admin@ihacklog.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop;__;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-Language: Chinese\n"
+"X-Poedit-Country: CHINA\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-SearchPath-0: D:\\htdocs\\wordpress-test\\wp-content\\plugins\\hacklog-down-as-pdf\n"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/addf.php:24
+msgid "Permission denied!Please log in as Administrator."
+msgstr ""
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/addf.php:30
+msgid "<strong>font</strong> param is required!For example: ?font=the-font-name.ttf"
+msgstr ""
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/addf.php:42
+#, php-format
+msgid "Error: font file <strong>%s</strong> not exists!Pllease upload it to the dir:<strong>%s</strong>"
+msgstr ""
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/addf.php:50
+#, php-format
+msgid "<p>Good luck,the font <strong>%s</strong> has been added!</p>"
+msgstr ""
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:76
+msgid "Error: header already sent! Please contact the site administrator to solve this problem."
+msgstr "错误：HTTP头部信息已经发送！请联系网站管理员解决此问题。"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:86
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:94
+msgid "Please do not leech."
+msgstr "请从本站下载。"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:105
+msgid "OOPS! this post is not allowed to be downloaded currently."
+msgstr ""
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:120
+msgid "OOPS! Post does not exists."
+msgstr "Oh,No! 日志不存在！"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:128
+msgid "OOPS! This post is password protected."
+msgstr ""
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:133
+msgid "OOPS! This post is currently not published."
+msgstr ""
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:166
+msgid "Oh,No! What are U doing?"
+msgstr "Oh,No!你想干神马？"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/generate.php:381
+#, php-format
+msgid "<h2 style=\"color:red;\"><strong>Copyright</strong> :</h2><br />All this contents are published under <a style=\"color:red;\" href=\"http://creativecommons.org/licenses/by-nc-sa/2.5/\" target=\"_blank\">Creative Commons Attribution-NonCommercial-ShareAlike 2.5 Generic License</a>.<br />for reproduced, please specify from this website <a style=\"color:green;\" target=\"_blank\" href=\"%1$s\"><strong>%2$s</strong></a> AND give the URL.<br />Article link：<a href=\"%3$s\" target=\"_blank\">%4$s</a><br />"
+msgstr "<h2 style=\"color:red;\"><strong>版权声明</strong> :</h2>本站遵循 <a style=\"color:red;\" href=\"http://creativecommons.org/licenses/by-nc-sa/2.5/cn/\" target=\"_blank\"> 署名-非商业性使用-相同方式共享 2.5</a> 共享协议. <br />转载请注明转自<a  style=\"color:green;\" target=\"_blank\" href=\"%1$s\"><strong>%2$s</strong></a>并标明URL.<br />本文链接：<a href=\"%3$s\">%4$s</a><br />"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:96
+#, php-format
+msgid "Error:%s is not writable!"
+msgstr "错误:%s 没有写入权限!"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:123
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:328
+msgid "Download as PDF"
+msgstr "下载PDF文档"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:144
+msgid "Hacklog Down as PDF"
+msgstr "Hacklog Down as PDF"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:156
+msgid "is this post allowed to Down as PDF ?"
+msgstr "此日志是否允许下载PDF?"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:157
+msgid "allow down as PDF"
+msgstr "允许下载本文为PDF文档"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:283
+msgid "Download this article as PDF"
+msgstr "下载此文章的 PDF 文档"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:288
+#, php-format
+msgid "Note: To download this article as PDF, please visit <a href=\"%s\">this post</a> to download the file."
+msgstr "Note: 要下载此文为PDF文档, 请访问 <a href=\"%s\">原文</a>下载。"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:322
+msgid "Cache cleared."
+msgstr "缓存成功清除。"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:380
+msgid "Saved changes."
+msgstr "保存"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:399
+msgid "Hacklog Down as PDF Options"
+msgstr "Hacklog Down as PDF 选项"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:404
+msgid "Link text"
+msgstr "链接文字"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:413
+msgid "Download type"
+msgstr "下载类型"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:417
+msgid "Show in browser window"
+msgstr "在浏览器中显示"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:418
+msgid "Force download"
+msgstr "下载"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:425
+msgid "Place to show the button"
+msgstr "要在哪里显示下载按钮"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:429
+msgid "Post"
+msgstr "日志"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:430
+msgid "Page"
+msgstr "页面"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:431
+msgid "Both Post and Page"
+msgstr "文章和页面"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:438
+msgid "Main Font"
+msgstr "字体"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:456
+msgid "Main font size"
+msgstr "字体大小"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:472
+msgid "Font Subsetting"
+msgstr "嵌入字体子集"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:476
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:489
+msgid "enable"
+msgstr "启用"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:477
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:490
+msgid "disable"
+msgstr "禁用"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:479
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:492
+msgid "enable font subsetting can reduce the size of the PDF file created but that is very slow and requires a lot of memory."
+msgstr "启用嵌入字体子集可以减小生成的PDF文档的大小但是这会使得生成PDF的速度变得很慢而且会消耗很多的内存。"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:485
+msgid "Enable Cache"
+msgstr "启用磁盘缓存"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:498
+msgid "Use CC license ?"
+msgstr "使用CC协议？"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:502
+msgid "Yes"
+msgstr "是"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:503
+msgid "No"
+msgstr "否"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:512
+msgid "Save Changes"
+msgstr "保存"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:521
+#, php-format
+msgid "Current total cache size: <strong>%s</strong>"
+msgstr "当前缓存总量: <strong>%s</strong>"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:523
+msgid "Clear cache"
+msgstr "清空缓存"
+
+#: D:\htdocs\wordpress-test\wp-content\plugins\hacklog-down-as-pdf/hacklog-down-as-pdf.php:530
+#, php-format
+msgid "Current TCPDF Version: <strong>%s</strong>"
+msgstr "当前 TCPDF 版本: <strong>%s</strong>"
+
+#~ msgid "Down as PDF Options"
+#~ msgstr "Down as PDF 选项"
+
+#~ msgid "Main options"
+#~ msgstr "主要选项"
