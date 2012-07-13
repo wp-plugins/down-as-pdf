@@ -1,9 +1,9 @@
 <?php
 //============================================================+
 // File name   : tcpdf.php
-// Version     : 5.9.153
+// Version     : 5.9.172
 // Begin       : 2002-08-03
-// Last Update : 2012-03-28
+// Last Update : 2012-07-02
 // Author      : Nicola Asuni - Tecnick.com LTD - Manor Coach House, Church Hill, Aldershot, Hants, GU12 4RQ, UK - www.tecnick.com - info@tecnick.com
 // License     : http://www.tecnick.com/pagefiles/tcpdf/LICENSE.TXT GNU-LGPLv3
 // -------------------------------------------------------------------
@@ -57,7 +57,7 @@
 //  * no-write page regions;
 //  * bookmarks, named destinations and table of content;
 //  * text hyphenation;
-//  * text stretching and spacing (tracking/kerning);
+//  * text stretching and spacing (tracking);
 //  * automatic page break, line break and text alignments including justification;
 //  * automatic page numbering and page groups;
 //  * move and delete pages;
@@ -125,7 +125,7 @@
  * <li>no-write page regions;</li>
  * <li>bookmarks, named destinations and table of content;</li>
  * <li>text hyphenation;</li>
- * <li>text stretching and spacing (tracking/kerning);</li>
+ * <li>text stretching and spacing (tracking);</li>
  * <li>automatic page break, line break and text alignments including justification;</li>
  * <li>automatic page numbering and page groups;</li>
  * <li>move and delete pages;</li>
@@ -137,7 +137,7 @@
  * Tools to encode your unicode fonts are on fonts/utils directory.</p>
  * @package com.tecnick.tcpdf
  * @author Nicola Asuni
- * @version 5.9.153
+ * @version 5.9.172
  */
 
 // Main configuration file. Define the K_TCPDF_EXTERNAL_CONFIG constant to skip this file.
@@ -149,7 +149,7 @@ require_once(dirname(__FILE__).'/config/tcpdf_config.php');
  * TCPDF project (http://www.tcpdf.org) has been originally derived in 2002 from the Public Domain FPDF class by Olivier Plathey (http://www.fpdf.org), but now is almost entirely rewritten.<br>
  * @package com.tecnick.tcpdf
  * @brief PHP class for generating PDF documents without requiring external extensions.
- * @version 5.9.153
+ * @version 5.9.172
  * @author Nicola Asuni - info@tecnick.com
  */
 class TCPDF {
@@ -160,7 +160,7 @@ class TCPDF {
 	 * Current TCPDF version.
 	 * @private
 	 */
-	private $tcpdf_version = '5.9.153';
+	private $tcpdf_version = '5.9.172';
 
 	// Protected properties
 
@@ -180,7 +180,13 @@ class TCPDF {
 	 * Array of object offsets.
 	 * @protected
 	 */
-	protected $offsets;
+	protected $offsets = array();
+
+	/**
+	 * Array of object IDs for each page.
+	 * @protected
+	 */
+	protected $pageobjects = array();
 
 	/**
 	 * Buffer holding in-memory PDF.
@@ -1590,7 +1596,7 @@ class TCPDF {
 	protected $font_stretching = 100;
 
 	/**
-	 * Increases or decreases the space between characters in a text by the specified amount (tracking/kerning).
+	 * Increases or decreases the space between characters in a text by the specified amount (tracking).
 	 * @protected
 	 * @since 5.9.000 (2010-09-29)
 	 */
@@ -1873,6 +1879,13 @@ class TCPDF {
 	 */
 	protected $tcpdflink = true;
 
+	/**
+	 * Cache array for computed GD gamma values.
+	 * @protected
+	 * @since 5.9.1632 (2012-06-05)
+	 */
+	protected $gdgammacache = array();
+
 	//------------------------------------------------------------
 	// METHODS
 	//------------------------------------------------------------
@@ -2037,7 +2050,8 @@ class TCPDF {
 		}
 		$this->default_form_prop = array('lineWidth'=>1, 'borderStyle'=>'solid', 'fillColor'=>array(255, 255, 255), 'strokeColor'=>array(128, 128, 128));
 		// set file ID for trailer
-		$this->file_id = md5($this->getRandomSeed('TCPDF'.$orientation.$unit.$format.$encoding));
+		$serformat = (is_array($format) ? serialize($format) : $format);
+		$this->file_id = md5($this->getRandomSeed('TCPDF'.$orientation.$unit.$serformat.$encoding));
 		// set document creation and modification timestamp
 		$this->doc_creation_timestamp = time();
 		$this->doc_modification_timestamp = $this->doc_creation_timestamp;
@@ -4261,7 +4275,7 @@ class TCPDF {
 		// print header template
 		$x = 0;
 		$dx = 0;
-		if ($this->booklet AND (($this->page % 2) == 0)) {
+		if (!$this->header_xobj_autoreset AND $this->booklet AND (($this->page % 2) == 0)) {
 			// adjust margins for booklet mode
 			$dx = ($this->original_lMargin - $this->original_rMargin);
 		}
@@ -4919,7 +4933,7 @@ class TCPDF {
 	}
 
 	/**
-	 * Returns the length of the char in user unit for the current font considering current stretching and spacing (tracking/kerning).
+	 * Returns the length of the char in user unit for the current font considering current stretching and spacing (tracking).
 	 * @param $char (int) The char code whose length is to be returned
 	 * @param $notlast (boolean) set to false for the latest character on string, true otherwise (default)
 	 * @return float char width
@@ -5400,7 +5414,7 @@ class TCPDF {
 	}
 
 	/**
-	 * Return the font ascent value
+	 * Return the font ascent value.
 	 * @param $font (string) font name
 	 * @param $style (string) font style
 	 * @param $size (float) The size (in points)
@@ -5421,7 +5435,7 @@ class TCPDF {
 	}
 
 	/**
-	 * Return the font descent value
+	 * Return true in the character is present in the specified font.
 	 * @param $char (mixed) Character to check (integer value or string)
 	 * @param $font (string) Font name (family name).
 	 * @param $style (string) Font style.
@@ -5436,6 +5450,9 @@ class TCPDF {
 			$char = $char[0];
 		}
 		if ($this->empty_string($font)) {
+			if ($this->empty_string($style)) {
+				return (isset($this->CurrentFont['cw'][intval($char)]));
+			}
 			$font = $this->FontFamily;
 		}
 		$fontdata = $this->AddFont($font, $style);
@@ -5718,7 +5735,7 @@ class TCPDF {
 			if ($this->current_column < ($this->num_columns - 1)) {
 				// go to next column
 				$this->selectColumn($this->current_column + 1);
-			} else {
+			} elseif ($this->AutoPageBreak) {
 				// add a new page
 				$this->AddPage();
 				// set first column
@@ -6023,34 +6040,95 @@ class TCPDF {
 				} else {
 					$unicode = $this->UTF8StringToArray($txt); // array of UTF-8 unicode values
 					$unicode = $this->utf8Bidi($unicode, '', $this->tmprtl);
+					// replace thai chars (if any)
 					if (defined('K_THAI_TOPCHARS') AND (K_THAI_TOPCHARS == true)) {
-						// ---- Fix for bug #2977340 "Incorrect Thai characters position arrangement" ----
-						// NOTE: this doesn't work with HTML justification
-						// Symbols that could overlap on the font top (only works in LTR)
-						$topchar = array(3611, 3613, 3615, 3650, 3651, 3652); // chars that extends on top
-						$topsym = array(3633, 3636, 3637, 3638, 3639, 3655, 3656, 3657, 3658, 3659, 3660, 3661, 3662); // symbols with top position
-						$numchars = count($unicode); // number of chars
-						$unik = 0;
-						$uniblock = array();
-						$uniblock[$unik] = array();
-						$uniblock[$unik][] = $unicode[0];
-						// resolve overlapping conflicts by splitting the string in several parts
-						for ($i = 1; $i < $numchars; ++$i) {
-							// check if symbols overlaps at top
-							if (in_array($unicode[$i], $topsym) AND (in_array($unicode[($i - 1)], $topsym) OR in_array($unicode[($i - 1)], $topchar))) {
-								// move symbols to another array
-								++$unik;
-								$uniblock[$unik] = array();
-								$uniblock[$unik][] = $unicode[$i];
-								++$unik;
-								$uniblock[$unik] = array();
-								$unicode[$i] = 0x200b; // Unicode Character 'ZERO WIDTH SPACE' (DEC:8203, U+200B)
+						// number of chars
+						$numchars = count($unicode);
+						// po pla, for far, for fan
+						$longtail = array(0x0e1b, 0x0e1d, 0x0e1f);
+						// do chada, to patak
+						$lowtail = array(0x0e0e, 0x0e0f);
+						// mai hun arkad, sara i, sara ii, sara ue, sara uee
+						$upvowel = array(0x0e31, 0x0e34, 0x0e35, 0x0e36, 0x0e37);
+						// mai ek, mai tho, mai tri, mai chattawa, karan
+						$tonemark = array(0x0e48, 0x0e49, 0x0e4a, 0x0e4b, 0x0e4c);
+						// sara u, sara uu, pinthu
+						$lowvowel = array(0x0e38, 0x0e39, 0x0e3a);
+						$output = array();
+						for ($i = 0; $i < $numchars; $i++) {
+							if (($unicode[$i] >= 0x0e00) && ($unicode[$i] <= 0x0e5b)) {
+								$ch0 = $unicode[$i];
+								$ch1 = ($i > 0) ? $unicode[($i - 1)] : 0;
+								$ch2 = ($i > 1) ? $unicode[($i - 2)] : 0;
+								$chn = ($i < ($numchars - 1)) ? $unicode[($i + 1)] : 0;
+								if (in_array($ch0, $tonemark)) {
+									if ($chn == 0x0e33) {
+										// sara um
+										if (in_array($ch1, $longtail)) {
+											// tonemark at upper left
+											$output[] = $this->replaceChar($ch0, (0xf713 + $ch0 - 0x0e48));
+										} else {
+											// tonemark at upper right (normal position)
+											$output[] = $ch0;
+										}
+									} elseif (in_array($ch1, $longtail) OR (in_array($ch2, $longtail) AND in_array($ch1, $lowvowel))) {
+										// tonemark at lower left
+										$output[] = $this->replaceChar($ch0, (0xf705 + $ch0 - 0x0e48));
+									} elseif (in_array($ch1, $upvowel)) {
+										if (in_array($ch2, $longtail)) {
+											// tonemark at upper left
+											$output[] = $this->replaceChar($ch0, (0xf713 + $ch0 - 0x0e48));
+										} else {
+											// tonemark at upper right (normal position)
+											$output[] = $ch0;
+										}
+									} else {
+										// tonemark at lower right
+										$output[] = $this->replaceChar($ch0, (0xf70a + $ch0 - 0x0e48));
+									}
+								} elseif (($ch0 == 0x0e33) AND (in_array($ch1, $longtail) OR (in_array($ch2, $longtail) AND in_array($ch1, $tonemark)))) {
+									// add lower left nikhahit and sara aa
+									if ($this->isCharDefined(0xf711) AND $this->isCharDefined(0x0e32)) {
+										$output[] = 0xf711;
+										$this->CurrentFont['subsetchars'][0xf711] = true;
+										$output[] = 0x0e32;
+										$this->CurrentFont['subsetchars'][0x0e32] = true;
+									} else {
+										$output[] = $ch0;
+									}
+								} elseif (in_array($ch1, $longtail)) {
+									if ($ch0 == 0x0e31) {
+										// lower left mai hun arkad
+										$output[] = $this->replaceChar($ch0, 0xf710);
+									} elseif (in_array($ch0, $upvowel)) {
+										// lower left
+										$output[] = $this->replaceChar($ch0, (0xf701 + $ch0 - 0x0e34));
+									} elseif ($ch0 == 0x0e47) {
+										// lower left mai tai koo
+										$output[] = $this->replaceChar($ch0, 0xf712);
+									} else {
+										// normal character
+										$output[] = $ch0;
+									}
+								} elseif (in_array($ch1, $lowtail) AND in_array($ch0, $lowvowel)) {
+									// lower vowel
+									$output[] = $this->replaceChar($ch0, (0xf718 + $ch0 - 0x0e38));
+								} elseif (($ch0 == 0x0e0d) AND in_array($chn, $lowvowel)) {
+									// yo ying without lower part
+									$output[] = $this->replaceChar($ch0, 0xf70f);
+								} elseif (($ch0 == 0x0e10) AND in_array($chn, $lowvowel)) {
+									// tho santan without lower part
+									$output[] = $this->replaceChar($ch0, 0xf700);
+								} else {
+									$output[] = $ch0;
+								}
 							} else {
-								$uniblock[$unik][] = $unicode[$i];
+								// non-thai character
+								$output[] = $unicode[$i];
 							}
 						}
-						// ---- END OF Fix for bug #2977340
-					}
+						$unicode = $output;
+					} // end of K_THAI_TOPCHARS
 					$txt2 = $this->arrUTF8ToUTF16BE($unicode, false);
 				}
 			}
@@ -6248,6 +6326,25 @@ class TCPDF {
 		$this->cell_padding = $prev_cell_padding;
 		$this->cell_margin = $prev_cell_margin;
 		return $rs;
+	}
+
+	/**
+	 * Replace a char if is defined on the current font.
+	 * @param $oldchar (int) Integer code (unicode) of the character to replace.
+	 * @param $newchar (int) Integer code (unicode) of the new character.
+	 * @return int the replaced char or the old char in case the new char i not defined
+	 * @protected
+	 * @since 5.9.167 (2012-06-22)
+	 */
+	protected function replaceChar($oldchar, $newchar) {
+		if ($this->isCharDefined($newchar)) {
+			// add the new char on the subset list
+			$this->CurrentFont['subsetchars'][$newchar] = true;
+			// return the new character
+			return $newchar;
+		}
+		// return the old char
+		return $oldchar;
 	}
 
 	/**
@@ -7069,7 +7166,7 @@ class TCPDF {
 			$w = $this->w - $this->rMargin - $this->x;
 		}
 		// max column width
-		$wmax = $w - $wadj;
+		$wmax = ($w - $wadj);
 		if (!$firstline) {
 			$wmax -= ($this->cell_padding['L'] + $this->cell_padding['R']);
 		}
@@ -7155,7 +7252,7 @@ class TCPDF {
 					$this->rMargin += $margin['R'];
 				}
 				$w = $this->getRemainingWidth();
-				$wmax = $w - $this->cell_padding['L'] - $this->cell_padding['R'];
+				$wmax = ($w - $this->cell_padding['L'] - $this->cell_padding['R']);
 			} else {
 				// 160 is the non-breaking space.
 				// 173 is SHY (Soft Hypen).
@@ -7191,8 +7288,8 @@ class TCPDF {
 					// we have reached the end of column
 					if ($sep == -1) {
 						// check if the line was already started
-						if (($this->rtl AND ($this->x <= ($this->w - $this->rMargin - $chrwidth)))
-							OR ((!$this->rtl) AND ($this->x >= ($this->lMargin + $chrwidth)))) {
+						if (($this->rtl AND ($this->x <= ($this->w - $this->rMargin - $this->cell_padding['R'] - $margin['R'] - $chrwidth)))
+							OR ((!$this->rtl) AND ($this->x >= ($this->lMargin + $this->cell_padding['L'] + $margin['L'] + $chrwidth)))) {
 							// print a void cell and go to next line
 							$this->Cell($w, $h, '', 0, 1);
 							$linebreak = true;
@@ -7661,7 +7758,7 @@ class TCPDF {
 		if ($file[0] === '@') {
 			// image from string
 			$imgdata = substr($file, 1);
-			$file = K_PATH_CACHE.'img_'.md5($imgdata);
+			$file = $this->getObjFilename('img');
 			$fp = fopen($file, 'w');
 			fwrite($fp, $imgdata);
 			fclose($fp);
@@ -7707,7 +7804,7 @@ class TCPDF {
 					curl_close($cs);
 					if ($imgdata !== FALSE) {
 						// copy image to cache
-						$file = K_PATH_CACHE.'img_'.md5($imgdata);
+						$file = $this->getObjFilename('img');
 						$fp = fopen($file, 'w');
 						fwrite($fp, $imgdata);
 						fclose($fp);
@@ -7738,7 +7835,7 @@ class TCPDF {
 			}
 		}
 		// file hash
-		$filehash = md5($file);
+		$filehash = md5($this->file_id.$file);
 		// get original image width and height in pixels
 		list($pixw, $pixh) = $imsize;
 		// calculate image width and height on document
@@ -8320,11 +8417,13 @@ class TCPDF {
 				$data .= $this->rfread($f, $n);
 				fread($f, 4);
 			} elseif ($type == 'iCCP') {
-				// skip profile name and null separator
+				// skip profile name
 				$len = 0;
 				while ((ord(fread($f, 1)) > 0) AND ($len < 80)) {
 					++$len;
 				}
+				// skip null separator
+				fread($f, 1);
 				// get compression method
 				if (ord(fread($f, 1)) != 0) {
 					//$this->Error('Unknown filter method: '.$file);
@@ -8396,7 +8495,7 @@ class TCPDF {
 	 */
 	protected function ImagePngAlpha($file, $x, $y, $wpx, $hpx, $w, $h, $type, $link, $align, $resize, $dpi, $palign, $filehash='') {
 		if (empty($filehash)) {
-			$filehash = md5($file);
+			$filehash = md5($this->file_id.$file);
 		}
 		// create temp image file (without alpha channel)
 		$tempfile_plain = K_PATH_CACHE.'mskp_'.$filehash;
@@ -8407,7 +8506,7 @@ class TCPDF {
 			$img = new Imagick();
 			$img->readImage($file);
 			// clone image object
-			$imga = $img->clone();
+			$imga = $this->objclone($img);
 			// extract alpha channel
 			$img->separateImageChannel(8); // 8 = (imagick::CHANNEL_ALPHA | imagick::CHANNEL_OPACITY | imagick::CHANNEL_MATTE);
 			$img->negateImage(true);
@@ -8429,9 +8528,7 @@ class TCPDF {
 			for ($xpx = 0; $xpx < $wpx; ++$xpx) {
 				for ($ypx = 0; $ypx < $hpx; ++$ypx) {
 					$color = imagecolorat($img, $xpx, $ypx);
-					$alpha = ($color >> 24); // shifts off the first 24 bits (where 8x3 are used for each color), and returns the remaining 7 allocated bits (commonly used for alpha)
-					$alpha = (((127 - $alpha) / 127) * 255); // GD alpha is only 7 bit (0 -> 127)
-					$alpha = $this->getGDgamma($alpha); // correct gamma
+					$alpha = $this->getGDgamma($color); // correct gamma
 					imagesetpixel($imgalpha, $xpx, $ypx, $alpha);
 				}
 			}
@@ -8455,13 +8552,27 @@ class TCPDF {
 	}
 
 	/**
-	 * Correct the gamma value to be used with GD library
-	 * @param $v (float) the gamma value to be corrected
+	 * Get the GD-corrected PNG gamma value from alpha color
+	 * @param $c (int) alpha color
 	 * @protected
 	 * @since 4.3.007 (2008-12-04)
 	 */
-	protected function getGDgamma($v) {
-		return (pow(($v / 255), 2.2) * 255);
+	protected function getGDgamma($c) {
+		if (!isset($this->gdgammacache["'".$c."'"])) {
+			// shifts off the first 24 bits (where 8x3 are used for each color),
+			// and returns the remaining 7 allocated bits (commonly used for alpha)
+			$alpha = ($c >> 24);
+			// GD alpha is only 7 bit (0 -> 127)
+			$alpha = (((127 - $alpha) / 127) * 255);
+			// correct gamma
+			$this->gdgammacache["'".$c."'"] = (pow(($alpha / 255), 2.2) * 255);
+			// store the latest values on cache to improve performances
+			if (count($this->gdgammacache) > 8) {
+				// remove one element from the cache array
+				array_shift($this->gdgammacache);
+			}
+		}
+		return $this->gdgammacache["'".$c."'"];
 	}
 
 	/**
@@ -9509,9 +9620,11 @@ class TCPDF {
 								$annots .= ' /A <</S /URI /URI '.$this->_datastring($this->unhtmlentities($pl['txt']), $annot_obj_id).'>>';
 							} else {
 								// internal link
-								$l = $this->links[$pl['txt']];
-								if (isset($this->page_obj_id[($l[0])])) {
-									$annots .= sprintf(' /Dest [%u 0 R /XYZ 0 %F null]', $this->page_obj_id[($l[0])], ($this->pagedim[$l[0]]['h'] - ($l[1] * $this->k)));
+								if (isset($this->links[$pl['txt']])) {
+									$l = $this->links[$pl['txt']];
+									if (isset($this->page_obj_id[($l[0])])) {
+										$annots .= sprintf(' /Dest [%u 0 R /XYZ 0 %F null]', $this->page_obj_id[($l[0])], ($this->pagedim[$l[0]]['h'] - ($l[1] * $this->k)));
+									}
 								}
 							}
 							$hmodes = array('N', 'I', 'O', 'P');
@@ -10001,17 +10114,19 @@ class TCPDF {
 
 	/**
 	 * Convert and add the selected TrueType or Type1 font to the fonts folder (that must be writeable).
-	 * @param $fontfile (string) TrueType or Type1 font file (full path).
+	 * @param $fontfile (string) Font file (full path).
 	 * @param $fonttype (string) Font type. Leave empty for autodetect mode. Valid values are: TrueTypeUnicode, TrueType, Type1, CID0JP = CID-0 Japanese, CID0KR = CID-0 Korean, CID0CS = CID-0 Chinese Simplified, CID0CT = CID-0 Chinese Traditional.
 	 * @param $enc (string) Name of the encoding table to use. Leave empty for default mode. Omit this parameter for TrueType Unicode and symbolic fonts like Symbol or ZapfDingBats.
 	 * @param $flags (int) Unsigned 32-bit integer containing flags specifying various characteristics of the font (PDF32000:2008 - 9.8.2 Font Descriptor Flags): +1 for fixed font; +4 for symbol or +32 for non-symbol; +64 for italic. Fixed and Italic mode are generally autodetected so you have to set it to 32 = non-symbolic font (default) or 4 = symbolic font.
 	 * @param $outpath (string) Output path for generated font files (must be writeable by the web server). Leave empty for default font folder.
+	 * @param $platid (int) Platform ID for CMAP table to extract (when building a Unicode font for Windows this value should be 3, for Macintosh should be 1).
+	 * @param $encid (int) Encoding ID for CMAP table to extract (when building a Unicode font for Windows this value should be 1, for Macintosh should be 0). When Platform ID is 3, legal values for Encoding ID are: 0=Symbol, 1=Unicode, 2=ShiftJIS, 3=PRC, 4=Big5, 5=Wansung, 6=Johab, 7=Reserved, 8=Reserved, 9=Reserved, 10=UCS-4.
 	 * @return (string) TCPDF font name.
 	 * @author Nicola Asuni
 	 * @public
 	 * @since 5.9.123 (2010-09-30)
 	 */
-	public function addTTFfont($fontfile, $fonttype='', $enc='', $flags=32, $outpath='') {
+	public function addTTFfont($fontfile, $fonttype='', $enc='', $flags=32, $outpath='', $platid=3, $encid=1) {
 		if (!file_exists($fontfile)) {
 			$this->Error('Could not find file: '.$fontfile.'');
 		}
@@ -10298,7 +10413,7 @@ class TCPDF {
 				fclose($fp);
 			}
 			$offset = 0; // offset position of the font data
-			if ($this->_getULONG($font, $offset) != 0x10000) { echo $this->_getULONG($font, $offset);
+			if ($this->_getULONG($font, $offset) != 0x10000) {
 				// sfnt version must be 0x00010000 for TrueType version 1.0.
 				return $font;
 			}
@@ -10480,217 +10595,215 @@ class TCPDF {
 			// ---------- get CIDToGIDMap ----------
 			$ctg = array();
 			foreach ($encodingTables as $enctable) {
-				if (($enctable['platformID'] == 3) AND ($enctable['encodingID'] == 0)) {
-					$modesymbol = true;
-				} else {
-					$modesymbol = false;
-				}
-				$offset = $table['cmap']['offset'] + $enctable['offset'];
-				$format = $this->_getUSHORT($font, $offset);
-				$offset += 2;
-				switch ($format) {
-					case 0: { // Format 0: Byte encoding table
-						$offset += 4; // skip length and version/language
-						for ($c = 0; $c < 256; ++$c) {
-							$g = $this->_getBYTE($font, $offset);
-							$ctg[$c] = $g;
-							++$offset;
-						}
-						break;
-					}
-					case 2: { // Format 2: High-byte mapping through table
-						$offset += 4; // skip length and version/language
-						$numSubHeaders = 0;
-						for ($i = 0; $i < 256; ++$i) {
-							// Array that maps high bytes to subHeaders: value is subHeader index * 8.
-							$subHeaderKeys[$i] = ($this->_getUSHORT($font, $offset) / 8);
-							$offset += 2;
-							if ($numSubHeaders < $subHeaderKeys[$i]) {
-								$numSubHeaders = $subHeaderKeys[$i];
-							}
-						}
-						// the number of subHeaders is equal to the max of subHeaderKeys + 1
-						++$numSubHeaders;
-						// read subHeader structures
-						$subHeaders = array();
-						$numGlyphIndexArray = 0;
-						for ($k = 0; $k < $numSubHeaders; ++$k) {
-							$subHeaders[$k]['firstCode'] = $this->_getUSHORT($font, $offset);
-							$offset += 2;
-							$subHeaders[$k]['entryCount'] = $this->_getUSHORT($font, $offset);
-							$offset += 2;
-							$subHeaders[$k]['idDelta'] = $this->_getUSHORT($font, $offset);
-							$offset += 2;
-							$subHeaders[$k]['idRangeOffset'] = $this->_getUSHORT($font, $offset);
-							$offset += 2;
-							$subHeaders[$k]['idRangeOffset'] -= (2 + (($numSubHeaders - $k - 1) * 8));
-							$subHeaders[$k]['idRangeOffset'] /= 2;
-							$numGlyphIndexArray += $subHeaders[$k]['entryCount'];
-						}
-						for ($k = 0; $k < $numGlyphIndexArray; ++$k) {
-							$glyphIndexArray[$k] = $this->_getUSHORT($font, $offset);
-							$offset += 2;
-						}
-						for ($i = 0; $i < 256; ++$i) {
-							$k = $subHeaderKeys[$i];
-							if ($k == 0) {
-								// one byte code
-								$c = $i;
-								$g = $glyphIndexArray[0];
+				// get only specified Platform ID and Encoding ID
+				if (($enctable['platformID'] == $platid) AND ($enctable['encodingID'] == $encid)) {
+					$offset = $table['cmap']['offset'] + $enctable['offset'];
+					$format = $this->_getUSHORT($font, $offset);
+					$offset += 2;
+					switch ($format) {
+						case 0: { // Format 0: Byte encoding table
+							$offset += 4; // skip length and version/language
+							for ($c = 0; $c < 256; ++$c) {
+								$g = $this->_getBYTE($font, $offset);
 								$ctg[$c] = $g;
-							} else {
-								// two bytes code
-								$start_byte = $subHeaders[$k]['firstCode'];
-								$end_byte = $start_byte + $subHeaders[$k]['entryCount'];
-								for ($j = $start_byte; $j < $end_byte; ++$j) {
-									// combine high and low bytes
-									$c = (($i << 8) + $j);
-									$idRangeOffset = ($subHeaders[$k]['idRangeOffset'] + $j - $subHeaders[$k]['firstCode']);
-									$g = ($glyphIndexArray[$idRangeOffset] + $idDelta[$k]) % 65536;
+								++$offset;
+							}
+							break;
+						}
+						case 2: { // Format 2: High-byte mapping through table
+							$offset += 4; // skip length and version/language
+							$numSubHeaders = 0;
+							for ($i = 0; $i < 256; ++$i) {
+								// Array that maps high bytes to subHeaders: value is subHeader index * 8.
+								$subHeaderKeys[$i] = ($this->_getUSHORT($font, $offset) / 8);
+								$offset += 2;
+								if ($numSubHeaders < $subHeaderKeys[$i]) {
+									$numSubHeaders = $subHeaderKeys[$i];
+								}
+							}
+							// the number of subHeaders is equal to the max of subHeaderKeys + 1
+							++$numSubHeaders;
+							// read subHeader structures
+							$subHeaders = array();
+							$numGlyphIndexArray = 0;
+							for ($k = 0; $k < $numSubHeaders; ++$k) {
+								$subHeaders[$k]['firstCode'] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+								$subHeaders[$k]['entryCount'] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+								$subHeaders[$k]['idDelta'] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+								$subHeaders[$k]['idRangeOffset'] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+								$subHeaders[$k]['idRangeOffset'] -= (2 + (($numSubHeaders - $k - 1) * 8));
+								$subHeaders[$k]['idRangeOffset'] /= 2;
+								$numGlyphIndexArray += $subHeaders[$k]['entryCount'];
+							}
+							for ($k = 0; $k < $numGlyphIndexArray; ++$k) {
+								$glyphIndexArray[$k] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+							}
+							for ($i = 0; $i < 256; ++$i) {
+								$k = $subHeaderKeys[$i];
+								if ($k == 0) {
+									// one byte code
+									$c = $i;
+									$g = $glyphIndexArray[0];
+									$ctg[$c] = $g;
+								} else {
+									// two bytes code
+									$start_byte = $subHeaders[$k]['firstCode'];
+									$end_byte = $start_byte + $subHeaders[$k]['entryCount'];
+									for ($j = $start_byte; $j < $end_byte; ++$j) {
+										// combine high and low bytes
+										$c = (($i << 8) + $j);
+										$idRangeOffset = ($subHeaders[$k]['idRangeOffset'] + $j - $subHeaders[$k]['firstCode']);
+										$g = ($glyphIndexArray[$idRangeOffset] + $idDelta[$k]) % 65536;
+										if ($g < 0) {
+											$g = 0;
+										}
+										$ctg[$c] = $g;
+									}
+								}
+							}
+							break;
+						}
+						case 4: { // Format 4: Segment mapping to delta values
+							$length = $this->_getUSHORT($font, $offset);
+							$offset += 2;
+							$offset += 2; // skip version/language
+							$segCount = ($this->_getUSHORT($font, $offset) / 2);
+							$offset += 2;
+							$offset += 6; // skip searchRange, entrySelector, rangeShift
+							$endCount = array(); // array of end character codes for each segment
+							for ($k = 0; $k < $segCount; ++$k) {
+								$endCount[$k] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+							}
+							$offset += 2; // skip reservedPad
+							$startCount = array(); // array of start character codes for each segment
+							for ($k = 0; $k < $segCount; ++$k) {
+								$startCount[$k] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+							}
+							$idDelta = array(); // delta for all character codes in segment
+							for ($k = 0; $k < $segCount; ++$k) {
+								$idDelta[$k] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+							}
+							$idRangeOffset = array(); // Offsets into glyphIdArray or 0
+							for ($k = 0; $k < $segCount; ++$k) {
+								$idRangeOffset[$k] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+							}
+							$gidlen = ($length / 2) - 8 - (4 * $segCount);
+							$glyphIdArray = array(); // glyph index array
+							for ($k = 0; $k < $gidlen; ++$k) {
+								$glyphIdArray[$k] = $this->_getUSHORT($font, $offset);
+								$offset += 2;
+							}
+							for ($k = 0; $k < $segCount; ++$k) {
+								for ($c = $startCount[$k]; $c <= $endCount[$k]; ++$c) {
+									if ($idRangeOffset[$k] == 0) {
+										$g = ($idDelta[$k] + $c) % 65536;
+									} else {
+										$gid = (($idRangeOffset[$k] / 2) + ($c - $startCount[$k]) - ($segCount - $k));
+										$g = ($glyphIdArray[$gid] + $idDelta[$k]) % 65536;
+									}
 									if ($g < 0) {
 										$g = 0;
 									}
 									$ctg[$c] = $g;
 								}
 							}
+							break;
 						}
-						break;
-					}
-					case 4: { // Format 4: Segment mapping to delta values
-						$length = $this->_getUSHORT($font, $offset);
-						$offset += 2;
-						$offset += 2; // skip version/language
-						$segCount = ($this->_getUSHORT($font, $offset) / 2);
-						$offset += 2;
-						$offset += 6; // skip searchRange, entrySelector, rangeShift
-						$endCount = array(); // array of end character codes for each segment
-						for ($k = 0; $k < $segCount; ++$k) {
-							$endCount[$k] = $this->_getUSHORT($font, $offset);
+						case 6: { // Format 6: Trimmed table mapping
+							$offset += 4; // skip length and version/language
+							$firstCode = $this->_getUSHORT($font, $offset);
 							$offset += 2;
-						}
-						$offset += 2; // skip reservedPad
-						$startCount = array(); // array of start character codes for each segment
-						for ($k = 0; $k < $segCount; ++$k) {
-							$startCount[$k] = $this->_getUSHORT($font, $offset);
+							$entryCount = $this->_getUSHORT($font, $offset);
 							$offset += 2;
-						}
-						$idDelta = array(); // delta for all character codes in segment
-						for ($k = 0; $k < $segCount; ++$k) {
-							$idDelta[$k] = $this->_getUSHORT($font, $offset);
-							$offset += 2;
-						}
-						$idRangeOffset = array(); // Offsets into glyphIdArray or 0
-						for ($k = 0; $k < $segCount; ++$k) {
-							$idRangeOffset[$k] = $this->_getUSHORT($font, $offset);
-							$offset += 2;
-						}
-						$gidlen = ($length / 2) - 8 - (4 * $segCount);
-						$glyphIdArray = array(); // glyph index array
-						for ($k = 0; $k < $gidlen; ++$k) {
-							$glyphIdArray[$k] = $this->_getUSHORT($font, $offset);
-							$offset += 2;
-						}
-						for ($k = 0; $k < $segCount; ++$k) {
-							for ($c = $startCount[$k]; $c <= $endCount[$k]; ++$c) {
-								if ($idRangeOffset[$k] == 0) {
-									$g = ($idDelta[$k] + $c) % 65536;
-								} else {
-									$gid = (($idRangeOffset[$k] / 2) + ($c - $startCount[$k]) - ($segCount - $k));
-									$g = ($glyphIdArray[$gid] + $idDelta[$k]) % 65536;
-								}
-								if ($g < 0) {
-									$g = 0;
-								}
+							for ($k = 0; $k < $entryCount; ++$k) {
+								$c = ($k + $firstCode);
+								$g = $this->_getUSHORT($font, $offset);
+								$offset += 2;
 								$ctg[$c] = $g;
 							}
+							break;
 						}
-						break;
-					}
-					case 6: { // Format 6: Trimmed table mapping
-						$offset += 4; // skip length and version/language
-						$firstCode = $this->_getUSHORT($font, $offset);
-						$offset += 2;
-						$entryCount = $this->_getUSHORT($font, $offset);
-						$offset += 2;
-						for ($k = 0; $k < $entryCount; ++$k) {
-							$c = ($k + $firstCode);
-							$g = $this->_getUSHORT($font, $offset);
-							$ctg[$c] = $g;
-							$offset += 2;
-						}
-						break;
-					}
-					case 8: { // Format 8: Mixed 16-bit and 32-bit coverage
-						$offset += 10; // skip reserved, length and version/language
-						for ($k = 0; $k < 8192; ++$k) {
-							$is32[$k] = $this->_getBYTE($font, $offset);
-							++$offset;
-						}
-						$nGroups = $this->_getULONG($font, $offset);
-						$offset += 4;
-						for ($i = 0; $i < $nGroups; ++$i) {
-							$startCharCode = $this->_getULONG($font, $offset);
+						case 8: { // Format 8: Mixed 16-bit and 32-bit coverage
+							$offset += 10; // skip reserved, length and version/language
+							for ($k = 0; $k < 8192; ++$k) {
+								$is32[$k] = $this->_getBYTE($font, $offset);
+								++$offset;
+							}
+							$nGroups = $this->_getULONG($font, $offset);
 							$offset += 4;
-							$endCharCode = $this->_getULONG($font, $offset);
-							$offset += 4;
-							$startGlyphID = $this->_getULONG($font, $offset);
-							$offset += 4;
-							for ($k = $startCharCode; $k <= $endCharCode; ++$k) {
-								$is32idx = floor($c / 8);
-								if ((isset($is32[$is32idx])) AND (($is32[$is32idx] & (1 << (7 - ($c % 8)))) == 0)) {
-									$c = $k;
-								} else {
-									// 32 bit format
-									// convert to decimal (http://www.unicode.org/faq//utf_bom.html#utf16-4)
-									//LEAD_OFFSET = (0xD800 - (0x10000 >> 10)) = 55232
-									//SURROGATE_OFFSET = (0x10000 - (0xD800 << 10) - 0xDC00) = -56613888
-									$c = ((55232 + ($k >> 10)) << 10) + (0xDC00 + ($k & 0x3FF)) -56613888;
+							for ($i = 0; $i < $nGroups; ++$i) {
+								$startCharCode = $this->_getULONG($font, $offset);
+								$offset += 4;
+								$endCharCode = $this->_getULONG($font, $offset);
+								$offset += 4;
+								$startGlyphID = $this->_getULONG($font, $offset);
+								$offset += 4;
+								for ($k = $startCharCode; $k <= $endCharCode; ++$k) {
+									$is32idx = floor($c / 8);
+									if ((isset($is32[$is32idx])) AND (($is32[$is32idx] & (1 << (7 - ($c % 8)))) == 0)) {
+										$c = $k;
+									} else {
+										// 32 bit format
+										// convert to decimal (http://www.unicode.org/faq//utf_bom.html#utf16-4)
+										//LEAD_OFFSET = (0xD800 - (0x10000 >> 10)) = 55232
+										//SURROGATE_OFFSET = (0x10000 - (0xD800 << 10) - 0xDC00) = -56613888
+										$c = ((55232 + ($k >> 10)) << 10) + (0xDC00 + ($k & 0x3FF)) -56613888;
+									}
+									$ctg[$c] = 0;
+									++$startGlyphID;
 								}
-								$ctg[$c] = 0;
-								++$startGlyphID;
 							}
+							break;
 						}
-						break;
-					}
-					case 10: { // Format 10: Trimmed array
-						$offset += 10; // skip reserved, length and version/language
-						$startCharCode = $this->_getULONG($font, $offset);
-						$offset += 4;
-						$numChars = $this->_getULONG($font, $offset);
-						$offset += 4;
-						for ($k = 0; $k < $numChars; ++$k) {
-							$c = ($k + $startCharCode);
-							$g = $this->_getUSHORT($font, $offset);
-							$ctg[$c] = $g;
-							$offset += 2;
-						}
-						break;
-					}
-					case 12: { // Format 12: Segmented coverage
-						$offset += 10; // skip length and version/language
-						$nGroups = $this->_getULONG($font, $offset);
-						$offset += 4;
-						for ($k = 0; $k < $nGroups; ++$k) {
+						case 10: { // Format 10: Trimmed array
+							$offset += 10; // skip reserved, length and version/language
 							$startCharCode = $this->_getULONG($font, $offset);
 							$offset += 4;
-							$endCharCode = $this->_getULONG($font, $offset);
+							$numChars = $this->_getULONG($font, $offset);
 							$offset += 4;
-							$startGlyphCode = $this->_getULONG($font, $offset);
-							$offset += 4;
-							for ($c = $startCharCode; $c <= $endCharCode; ++$c) {
-								$ctg[$c] = $startGlyphCode;
-								++$startGlyphCode;
+							for ($k = 0; $k < $numChars; ++$k) {
+								$c = ($k + $startCharCode);
+								$g = $this->_getUSHORT($font, $offset);
+								$ctg[$c] = $g;
+								$offset += 2;
 							}
+							break;
 						}
-						break;
-					}
-					case 13: { // Format 13: Many-to-one range mappings
-						// to be implemented ...
-						break;
-					}
-					case 14: { // Format 14: Unicode Variation Sequences
-						// to be implemented ...
-						break;
+						case 12: { // Format 12: Segmented coverage
+							$offset += 10; // skip length and version/language
+							$nGroups = $this->_getULONG($font, $offset);
+							$offset += 4;
+							for ($k = 0; $k < $nGroups; ++$k) {
+								$startCharCode = $this->_getULONG($font, $offset);
+								$offset += 4;
+								$endCharCode = $this->_getULONG($font, $offset);
+								$offset += 4;
+								$startGlyphCode = $this->_getULONG($font, $offset);
+								$offset += 4;
+								for ($c = $startCharCode; $c <= $endCharCode; ++$c) {
+									$ctg[$c] = $startGlyphCode;
+									++$startGlyphCode;
+								}
+							}
+							break;
+						}
+						case 13: { // Format 13: Many-to-one range mappings
+							// to be implemented ...
+							break;
+						}
+						case 14: { // Format 14: Unicode Variation Sequences
+							// to be implemented ...
+							break;
+						}
 					}
 				}
 			}
@@ -10910,11 +11023,7 @@ class TCPDF {
 			$offset += 4;
 		}
 		foreach ($encodingTables as $enctable) {
-			if (($enctable['platformID'] == 3) AND ($enctable['encodingID'] == 0)) {
-				$modesymbol = true;
-			} else {
-				$modesymbol = false;
-			}
+			// get all platforms and encodings
 			$offset = $table['cmap']['offset'] + $enctable['offset'];
 			$format = $this->_getUSHORT($font, $offset);
 			$offset += 2;
@@ -12859,11 +12968,14 @@ class TCPDF {
 		$this->_out('xref');
 		$this->_out('0 '.($this->n + 1));
 		$this->_out('0000000000 65535 f ');
+		$freegen = ($this->n + 2);
 		for ($i=1; $i <= $this->n; ++$i) {
 			if (!isset($this->offsets[$i]) AND ($i > 1)) {
-				$this->offsets[$i] = $this->offsets[($i - 1)];
+				$this->_out(sprintf('0000000000 %05d f ', $freegen));
+				++$freegen;
+			} else {
+				$this->_out(sprintf('%010d 00000 n ', $this->offsets[$i]));
 			}
-			$this->_out(sprintf('%010d 00000 n ', $this->offsets[$i]));
 		}
 		// TRAILER
 		$out = 'trailer'."\n";
@@ -12903,6 +13015,7 @@ class TCPDF {
 	 */
 	protected function _beginpage($orientation='', $format='') {
 		++$this->page;
+		$this->pageobjects[$this->page] = array();
 		$this->setPageBuffer($this->page, '');
 		// initialize array for graphics tranformation positions inside a page buffer
 		$this->transfmrk[$this->page] = array();
@@ -12971,6 +13084,7 @@ class TCPDF {
 			$objid = $this->n;
 		}
 		$this->offsets[$objid] = $this->bufferlen;
+		$this->pageobjects[$this->page][] = $objid;
 		return $objid.' 0 obj';
 	}
 
@@ -15016,7 +15130,7 @@ class TCPDF {
 	 * @since 2.1.000 (2008-01-08)
 	 */
 	protected function _outPoint($x, $y) {
-		$this->_out(sprintf('%F %F m', $x * $this->k, ($this->h - $y) * $this->k));
+		$this->_out(sprintf('%F %F m', ($x * $this->k), (($this->h - $y) * $this->k)));
 	}
 
 	/**
@@ -15028,7 +15142,7 @@ class TCPDF {
 	 * @since 2.1.000 (2008-01-08)
 	 */
 	protected function _outLine($x, $y) {
-		$this->_out(sprintf('%F %F l', $x * $this->k, ($this->h - $y) * $this->k));
+		$this->_out(sprintf('%F %F l', ($x * $this->k), (($this->h - $y) * $this->k)));
 	}
 
 	/**
@@ -20890,7 +21004,7 @@ class TCPDF {
 	/**
 	 * Returns the letter-spacing value from CSS value
 	 * @param $spacing (string) letter-spacing value
-	 * @param $parent (float) font spacing (tracking/kerning) value of the parent element
+	 * @param $parent (float) font spacing (tracking) value of the parent element
 	 * @return float quantity to increases or decreases the space between characters in a text.
 	 * @protected
 	 * @since 5.9.000 (2010-10-02)
@@ -21123,6 +21237,8 @@ class TCPDF {
 		$html = preg_replace('/<li([^\>]*)>'.$this->re_space['p'].'*<img/'.$this->re_space['m'], '<li\\1><font size="1">&nbsp;</font><img', $html);
 		$html = preg_replace('/<([^\>\/]*)>[\s]/', '<\\1>&nbsp;', $html); // preserve some spaces
 		$html = preg_replace('/[\s]<\/([^\>]*)>/', '&nbsp;</\\1>', $html); // preserve some spaces
+		$html = preg_replace('/<su([bp])/', '<zws/><su\\1', $html); // fix sub/sup alignment
+		$html = preg_replace('/<\/su([bp])>/', '</su\\1><zws/>', $html); // fix sub/sup alignment
 		$html = preg_replace('/'.$this->re_space['p'].'+/'.$this->re_space['m'], chr(32), $html); // replace multiple spaces with a single space
 		// trim string
 		$html = $this->stringTrim($html);
@@ -21836,7 +21952,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		$curfontascent = $this->getFontAscent($curfontname, $curfontstyle, $curfontsize);
 		$curfontdescent = $this->getFontDescent($curfontname, $curfontstyle, $curfontsize);
 		$curfontstretcing = $this->font_stretching;
-		$curfontkerning = $this->font_spacing;
+		$curfonttracking = $this->font_spacing;
 		$this->newline = true;
 		$newline = true;
 		$startlinepage = $this->page;
@@ -21975,7 +22091,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 					$this_method_vars['curfontascent'] = $curfontascent;
 					$this_method_vars['curfontdescent'] = $curfontdescent;
 					$this_method_vars['curfontstretcing'] = $curfontstretcing;
-					$this_method_vars['curfontkerning'] = $curfontkerning;
+					$this_method_vars['curfonttracking'] = $curfonttracking;
 					$this_method_vars['minstartliney'] = $minstartliney;
 					$this_method_vars['maxbottomliney'] = $maxbottomliney;
 					$this_method_vars['yshift'] = $yshift;
@@ -23079,9 +23195,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 									$nextstr = preg_split('/'.$this->re_space['p'].'+/'.$this->re_space['m'], $dom[$nkey]['value']);
 									if (isset($nextstr[0]) AND $same_textdir) {
 										$wadj += $this->GetStringWidth($nextstr[0], $tmp_fontname, $tmp_fontstyle, $tmp_fontsize);
-									}
-									if (isset($nextstr[1])) {
-										$write_block = false;
+										if (isset($nextstr[1])) {
+											$write_block = false;
+										}
 									}
 								}
 								++$nkey;
@@ -23094,6 +23210,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 							if ($numblks > 1) {
 								// try to split on blank spaces
 								$wadj = ($cwa - $strlinelen + $this->GetStringWidth($nextstr[($numblks - 1)]));
+							} else {
+								// set the entire block on new line
+								$wadj = $this->GetStringWidth($nextstr[0]);
 							}
 						}
 						// check for reversed text direction
@@ -23739,7 +23858,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 					$value = $tag['attribute']['value'];
 				}
 				if (isset($tag['attribute']['maxlength']) AND !$this->empty_string($tag['attribute']['maxlength'])) {
-					$opt['maxlen'] = intval($tag['attribute']['value']);
+					$opt['maxlen'] = intval($tag['attribute']['maxlength']);
 				}
 				$h = $this->FontSize * $this->cell_height_ratio;
 				if (isset($tag['attribute']['size']) AND !$this->empty_string($tag['attribute']['size'])) {
@@ -23785,14 +23904,23 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 						break;
 					}
 					case 'checkbox': {
+						if (!isset($value)) {
+							break;
+						}
 						$this->CheckBox($name, $w, $checked, $prop, $opt, $value, '', '', false);
 						break;
 					}
 					case 'radio': {
+						if (!isset($value)) {
+							break;
+						}
 						$this->RadioButton($name, $w, $prop, $opt, $value, $checked, '', '', false);
 						break;
 					}
 					case 'submit': {
+						if (!isset($value)) {
+							$value = 'submit';
+						}
 						$w = $this->GetStringWidth($value) * 1.5;
 						$h *= 1.6;
 						$prop = array('lineWidth'=>1, 'borderStyle'=>'beveled', 'fillColor'=>array(196, 196, 196), 'strokeColor'=>array(255, 255, 255));
@@ -23809,6 +23937,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 						break;
 					}
 					case 'reset': {
+						if (!isset($value)) {
+							$value = 'reset';
+						}
 						$w = $this->GetStringWidth($value) * 1.5;
 						$h *= 1.6;
 						$prop = array('lineWidth'=>1, 'borderStyle'=>'beveled', 'fillColor'=>array(196, 196, 196), 'strokeColor'=>array(255, 255, 255));
@@ -23854,6 +23985,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 						break;
 					}
 					case 'button': {
+						if (!isset($value)) {
+							$value = ' ';
+						}
 						$w = $this->GetStringWidth($value) * 1.5;
 						$h *= 1.6;
 						$prop = array('lineWidth'=>1, 'borderStyle'=>'beveled', 'fillColor'=>array(196, 196, 196), 'strokeColor'=>array(255, 255, 255));
@@ -24401,7 +24535,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 				break;
 			}
 			case 'sub': {
-				$this->SetXY($this->GetX(), $this->GetY() - ((0.3 * $parent['fontsize'])/$this->k));
+				$this->SetXY($this->GetX(), $this->GetY() - ((0.3 * $parent['fontsize']) / $this->k));
 				break;
 			}
 			case 'div': {
@@ -25650,6 +25784,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		$tmpintmrk = $this->intmrk[$frompage];
 		$tmpbordermrk = $this->bordermrk[$frompage];
 		$tmpcntmrk = $this->cntmrk[$frompage];
+		$tmppageobjects = $this->pageobjects[$frompage];
 		if (isset($this->footerpos[$frompage])) {
 			$tmpfooterpos = $this->footerpos[$frompage];
 		}
@@ -25685,6 +25820,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 			$this->intmrk[$i] = $this->intmrk[$j];
 			$this->bordermrk[$i] = $this->bordermrk[$j];
 			$this->cntmrk[$i] = $this->cntmrk[$j];
+			$this->pageobjects[$i] = $this->pageobjects[$j];
 			if (isset($this->footerpos[$j])) {
 				$this->footerpos[$i] = $this->footerpos[$j];
 			} elseif (isset($this->footerpos[$i])) {
@@ -25719,6 +25855,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		$this->intmrk[$topage] = $tmpintmrk;
 		$this->bordermrk[$topage] = $tmpbordermrk;
 		$this->cntmrk[$topage] = $tmpcntmrk;
+		$this->pageobjects[$topage] = $tmppageobjects;
 		if (isset($tmpfooterpos)) {
 			$this->footerpos[$topage] = $tmpfooterpos;
 		} elseif (isset($this->footerpos[$topage])) {
@@ -25806,6 +25943,12 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		unset($this->intmrk[$page]);
 		unset($this->bordermrk[$page]);
 		unset($this->cntmrk[$page]);
+		foreach ($this->pageobjects[$page] as $oid) {
+			if (isset($this->offsets[$oid])){
+				unset($this->offsets[$oid]);
+			}
+		}
+		unset($this->pageobjects[$page]);
 		if (isset($this->footerpos[$page])) {
 			unset($this->footerpos[$page]);
 		}
@@ -25840,6 +25983,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 				$this->intmrk[$i] = $this->intmrk[$j];
 				$this->bordermrk[$i] = $this->bordermrk[$j];
 				$this->cntmrk[$i] = $this->cntmrk[$j];
+				$this->pageobjects[$i] = $this->pageobjects[$j];
 				if (isset($this->footerpos[$j])) {
 					$this->footerpos[$i] = $this->footerpos[$j];
 				} elseif (isset($this->footerpos[$i])) {
@@ -25880,6 +26024,12 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 			unset($this->intmrk[$this->numpages]);
 			unset($this->bordermrk[$this->numpages]);
 			unset($this->cntmrk[$this->numpages]);
+			foreach ($this->pageobjects[$this->numpages] as $oid) {
+				if (isset($this->offsets[$oid])){
+					unset($this->offsets[$oid]);
+				}
+			}
+			unset($this->pageobjects[$this->numpages]);
 			if (isset($this->footerpos[$this->numpages])) {
 				unset($this->footerpos[$this->numpages]);
 			}
@@ -25981,6 +26131,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		$this->intmrk[$this->page] = $this->intmrk[$page];
 		$this->bordermrk[$this->page] = $this->bordermrk[$page];
 		$this->cntmrk[$this->page] = $this->cntmrk[$page];
+		$this->pageobjects[$this->page] = $this->pageobjects[$page];
 		$this->pageopen[$this->page] = false;
 		if (isset($this->footerpos[$page])) {
 			$this->footerpos[$this->page] = $this->footerpos[$page];
@@ -26044,11 +26195,13 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		$fontstyle = $this->FontStyle;
 		$w = $this->w - $this->lMargin - $this->rMargin;
 		$spacer = $this->GetStringWidth(chr(32)) * 4;
-		$page_first = $this->getPage();
 		$lmargin = $this->lMargin;
 		$rmargin = $this->rMargin;
 		$x_start = $this->GetX();
+		$page_first = $this->page;
 		$current_page = $this->page;
+		$page_fill_start = false;
+		$page_fill_end = false;
 		$current_column = $this->current_column;
 		if ($this->empty_string($numbersfont)) {
 			$numbersfont = $this->default_monospaced_font;
@@ -26154,8 +26307,26 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 			$this->Cell($tw, 0, $pagenum, 0, 1, $alignnum, 0, $link, 0);
 		}
 		$page_last = $this->getPage();
+		$numpages = ($page_last - $page_first + 1);
+		// account for booklet mode
+		if ($this->booklet) {
+			// check if a blank page is required before TOC
+			$page_fill_start = ((($page_first % 2) == 0) XOR (($page % 2) == 0));
+			$page_fill_end = (!((($numpages % 2) == 0) XOR ($page_fill_start)));
+			if ($page_fill_start) {
+				// add a page at the end (to be moved before TOC)
+				$this->addPage();
+				++$page_last;
+				++$numpages;
+			}
+			if ($page_fill_end) {
+				// add a page at the end
+				$this->addPage();
+				++$page_last;
+				++$numpages;
+			}
+		}
 		$maxpage = max($maxpage, $page_last);
-		$numpages = $page_last - $page_first + 1;
 		if (!$this->empty_string($page)) {
 			for ($p = $page_first; $p <= $page_last; ++$p) {
 				// get page data
@@ -26198,6 +26369,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 			}
 			// move pages
 			$this->Bookmark($toc_name, 0, 0, $page_first, $style, $color);
+			if ($page_fill_start) {
+				$this->movePage($page_last, $page_first);
+			}
 			for ($i = 0; $i < $numpages; ++$i) {
 				$this->movePage($page_last, $page);
 			}
@@ -26228,6 +26402,8 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		$this->htmlLinkColorArray = array();
 		$this->htmlLinkFontStyle = '';
 		$page_first = $this->getPage();
+		$page_fill_start = false;
+		$page_fill_end = false;
 		// get the font type used for numbers in each template
 		$current_font = $this->FontFamily;
 		foreach ($templates as $level => $html) {
@@ -26267,8 +26443,26 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		$this->htmlLinkFontStyle = $prev_htmlLinkFontStyle;
 		// move TOC page and replace numbers
 		$page_last = $this->getPage();
+		$numpages = ($page_last - $page_first + 1);
+		// account for booklet mode
+		if ($this->booklet) {
+			// check if a blank page is required before TOC
+			$page_fill_start = ((($page_first % 2) == 0) XOR (($page % 2) == 0));
+			$page_fill_end = (!((($numpages % 2) == 0) XOR ($page_fill_start)));
+			if ($page_fill_start) {
+				// add a page at the end (to be moved before TOC)
+				$this->addPage();
+				++$page_last;
+				++$numpages;
+			}
+			if ($page_fill_end) {
+				// add a page at the end
+				$this->addPage();
+				++$page_last;
+				++$numpages;
+			}
+		}
 		$maxpage = max($maxpage, $page_last);
-		$numpages = $page_last - $page_first + 1;
 		if (!$this->empty_string($page)) {
 			for ($p = $page_first; $p <= $page_last; ++$p) {
 				// get page data
@@ -26319,6 +26513,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 			}
 			// move pages
 			$this->Bookmark($toc_name, 0, 0, $page_first, $style, $color);
+			if ($page_fill_start) {
+				$this->movePage($page_last, $page_first);
+			}
 			for ($i = 0; $i < $numpages; ++$i) {
 				$this->movePage($page_last, $page);
 			}
@@ -27290,7 +27487,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 
 	/**
 	 * Get the amount to increase or decrease the space between characters in a text.
-	 * @return int font spacing (tracking/kerning) value
+	 * @return int font spacing (tracking) value
 	 * @author Nicola Asuni
 	 * @public
 	 * @since 5.9.000 (2010-09-29)
@@ -27694,7 +27891,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		// scale and translate
 		$e = $ox * $this->k * (1 - $svgscale_x);
 		$f = ($this->h - $oy) * $this->k * (1 - $svgscale_y);
-		$this->_out(sprintf('%F %F %F %F %F %F cm', $svgscale_x, 0, 0, $svgscale_y, $e + $svgoffset_x, $f + $svgoffset_y));
+		$this->_out(sprintf('%F %F %F %F %F %F cm', $svgscale_x, 0, 0, $svgscale_y, ($e + $svgoffset_x), ($f + $svgoffset_y)));
 		// creates a new XML parser to be used by the other XML functions
 		$this->parser = xml_parser_create('UTF-8');
 		// the following function allows to use parser inside object
@@ -28042,10 +28239,10 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 					$gradient['coords'][3] += $y;
 				}
 				// calculate percentages
-				$gradient['coords'][0] = ($gradient['coords'][0] - $x) / $w;
-				$gradient['coords'][1] = ($gradient['coords'][1] - $y) / $h;
-				$gradient['coords'][2] = ($gradient['coords'][2] - $x) / $w;
-				$gradient['coords'][3] = ($gradient['coords'][3] - $y) / $h;
+				$gradient['coords'][0] = (($gradient['coords'][0] - $x) / $w);
+				$gradient['coords'][1] = (($gradient['coords'][1] - $y) / $h);
+				$gradient['coords'][2] = (($gradient['coords'][2] - $x) / $w);
+				$gradient['coords'][3] = (($gradient['coords'][3] - $y) / $h);
 				if (isset($gradient['coords'][4])) {
 					$gradient['coords'][4] /= $w;
 				}
@@ -28074,9 +28271,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 			if ($gradient['type'] == 3) {
 				// circular gradient
 				$cy = $this->h - $y - ($gradient['coords'][1] * ($w + $h));
-				$this->_out(sprintf('%F 0 0 %F %F %F cm', $w*$this->k, $w*$this->k, $x*$this->k, $cy*$this->k));
+				$this->_out(sprintf('%F 0 0 %F %F %F cm', ($w * $this->k), ($w * $this->k), ($x * $this->k), ($cy * $this->k)));
 			} else {
-				$this->_out(sprintf('%F 0 0 %F %F %F cm', $w*$this->k, $h*$this->k, $x*$this->k, ($this->h-($y+$h))*$this->k));
+				$this->_out(sprintf('%F 0 0 %F %F %F cm', ($w * $this->k), ($h * $this->k), ($x * $this->k), (($this->h - ($y + $h)) * $this->k)));
 			}
 			if (count($gradient['stops']) > 1) {
 				$this->Gradient($gradient['type'], $gradient['coords'], $gradient['stops'], array(), false);
@@ -28284,6 +28481,8 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 								} else {
 									$this->_outLine($x, $y);
 								}
+								$x0 = $x;
+								$y0 = $y;
 							}
 							$xmin = min($xmin, $x);
 							$ymin = min($ymin, $y);
@@ -28305,6 +28504,8 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 							$y = $cp + $yoffset;
 							if ((abs($x0 - $x) >= $minlen) OR (abs($y0 - $y) >= $minlen)) {
 								$this->_outLine($x, $y);
+								$x0 = $x;
+								$y0 = $y;
 							}
 							$xmin = min($xmin, $x);
 							$ymin = min($ymin, $y);
@@ -28323,6 +28524,8 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 						$x = $cp + $xoffset;
 						if ((abs($x0 - $x) >= $minlen) OR (abs($y0 - $y) >= $minlen)) {
 							$this->_outLine($x, $y);
+							$x0 = $x;
+							$y0 = $y;
 						}
 						$xmin = min($xmin, $x);
 						$xmax = max($xmax, $x);
@@ -28337,6 +28540,8 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 						$y = $cp + $yoffset;
 						if ((abs($x0 - $x) >= $minlen) OR (abs($y0 - $y) >= $minlen)) {
 							$this->_outLine($x, $y);
+							$x0 = $x;
+							$y0 = $y;
 						}
 						$ymin = min($ymin, $y);
 						$ymax = max($ymax, $y);
@@ -28614,6 +28819,10 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		// get styling properties
 		$prev_svgstyle = $this->svgstyles[(count($this->svgstyles) - 1)]; // previous style
 		$svgstyle = $this->svgstyles[0]; // set default style
+		if ($clipping AND !isset($attribs['fill']) AND (!isset($attribs['style']) OR (!preg_match('/[;\"\s]{1}fill[\s]*:[\s]*([^;\"]*)/si', $attribs['style'], $attrval)))) {
+			// default fill attribute for clipping
+			$attribs['fill'] = 'none';
+		}
 		if (isset($attribs['style']) AND !$this->empty_string($attribs['style'])) {
 			// fix style for regular expression
 			$attribs['style'] = ';'.$attribs['style'];
@@ -28646,7 +28855,8 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 		if (!empty($ctm)) {
 			$tm = $ctm;
 		} else {
-			$tm = $this->svgstyles[(count($this->svgstyles) - 1)]['transfmatrix'];
+			//$tm = $this->svgstyles[(count($this->svgstyles) - 1)]['transfmatrix'];
+			$tm = array(1,0,0,1,0,0);
 		}
 		if (isset($attribs['transform']) AND !empty($attribs['transform'])) {
 			$tm = $this->getTransformationMatrixProduct($tm, $this->getSVGTransformMatrix($attribs['transform']));
@@ -28685,6 +28895,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 				// group together related graphics elements
 				array_push($this->svgstyles, $svgstyle);
 				$this->StartTransform();
+				$this->SVGTransform($tm);
 				$this->setSVGStyles($svgstyle, $prev_svgstyle);
 				break;
 			}
@@ -28705,15 +28916,19 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 					$this->svggradients[$this->svggradientid]['gradientUnits'] = 'objectBoundingBox';
 				}
 				//$attribs['spreadMethod']
-				$x1 = (isset($attribs['x1'])?$attribs['x1']:'0%');
-				$y1 = (isset($attribs['y1'])?$attribs['y1']:'0%');
-				$x2 = (isset($attribs['x2'])?$attribs['x2']:'100%');
-				$y2 = (isset($attribs['y2'])?$attribs['y2']:'0%');
-				if (substr($x1, -1) != '%') {
-					$this->svggradients[$this->svggradientid]['mode'] = 'measure';
-				} else {
+				if (((!isset($attribs['x1'])) AND (!isset($attribs['y1'])) AND (!isset($attribs['x2'])) AND (!isset($attribs['y2'])))
+					OR ((isset($attribs['x1']) AND (substr($attribs['x1'], -1) == '%'))
+						OR (isset($attribs['y1']) AND (substr($attribs['y1'], -1) == '%'))
+						OR (isset($attribs['x2']) AND (substr($attribs['x2'], -1) == '%'))
+						OR (isset($attribs['y2']) AND (substr($attribs['y2'], -1) == '%')))) {
 					$this->svggradients[$this->svggradientid]['mode'] = 'percentage';
+				} else {
+					$this->svggradients[$this->svggradientid]['mode'] = 'measure';
 				}
+				$x1 = (isset($attribs['x1'])?$attribs['x1']:'0');
+				$y1 = (isset($attribs['y1'])?$attribs['y1']:'0');
+				$x2 = (isset($attribs['x2'])?$attribs['x2']:'100');
+				$y2 = (isset($attribs['y2'])?$attribs['y2']:'0');
 				if (isset($attribs['gradientTransform'])) {
 					$this->svggradients[$this->svggradientid]['gradientTransform'] = $this->getSVGTransformMatrix($attribs['gradientTransform']);
 				}
@@ -28741,16 +28956,18 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 					$this->svggradients[$this->svggradientid]['gradientUnits'] = 'objectBoundingBox';
 				}
 				//$attribs['spreadMethod']
+				if (((!isset($attribs['cx'])) AND (!isset($attribs['cy'])))
+					OR ((isset($attribs['cx']) AND (substr($attribs['cx'], -1) == '%'))
+						OR (isset($attribs['cy']) AND (substr($attribs['cy'], -1) == '%')) )) {
+					$this->svggradients[$this->svggradientid]['mode'] = 'percentage';
+				} else {
+					$this->svggradients[$this->svggradientid]['mode'] = 'measure';
+				}
 				$cx = (isset($attribs['cx'])?$attribs['cx']:0.5);
 				$cy = (isset($attribs['cy'])?$attribs['cy']:0.5);
 				$fx = (isset($attribs['fx'])?$attribs['fx']:$cx);
 				$fy = (isset($attribs['fy'])?$attribs['fy']:$cy);
 				$r = (isset($attribs['r'])?$attribs['r']:0.5);
-				if (isset($attribs['cx']) AND (substr($attribs['cx'], -1) != '%')) {
-					$this->svggradients[$this->svggradientid]['mode'] = 'measure';
-				} else {
-					$this->svggradients[$this->svggradientid]['mode'] = 'percentage';
-				}
 				if (isset($attribs['gradientTransform'])) {
 					$this->svggradients[$this->svggradientid]['gradientTransform'] = $this->getSVGTransformMatrix($attribs['gradientTransform']);
 				}
@@ -28934,7 +29151,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 					$this->StartTransform();
 					$this->SVGTransform($tm);
 					$obstyle = $this->setSVGStyles($svgstyle, $prev_svgstyle, $x, $y, $w, $h, 'PolyLine', array($p, 'CNZ'));
-					$this->PolyLine($p, 'D', array(), array());
+					if (!empty($obstyle)) {
+						$this->PolyLine($p, $obstyle, array(), array());
+					}
 					$this->StopTransform();
 				} else { // polygon
 					if ($clipping) {
@@ -29003,14 +29222,26 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 			// text
 			case 'text':
 			case 'tspan': {
+				// only basic support - advanced features must be implemented
 				$this->svgtextmode['invisible'] = $invisible;
 				if ($invisible) {
 					break;
 				}
 				array_push($this->svgstyles, $svgstyle);
-				// only basic support - advanced features must be implemented
-				$x = (isset($attribs['x'])?$this->getHTMLUnitToUnits($attribs['x'], 0, $this->svgunit, false):$this->x);
-				$y = (isset($attribs['y'])?$this->getHTMLUnitToUnits($attribs['y'], 0, $this->svgunit, false):$this->y);
+				if (isset($attribs['x'])) {
+					$x = $this->getHTMLUnitToUnits($attribs['x'], 0, $this->svgunit, false);
+				} elseif ($name == 'tspan') {
+					$x = $this->x;
+				} else {
+					$x = 0;
+				}
+				if (isset($attribs['y'])) {
+					$y = $this->getHTMLUnitToUnits($attribs['y'], 0, $this->svgunit, false);
+				} elseif ($name == 'tspan') {
+					$y = $this->y;
+				} else {
+					$y = 0;
+				}
 				$svgstyle['text-color'] = $svgstyle['fill'];
 				$this->svgtext = '';
 				if (isset($svgstyle['text-anchor'])) {
@@ -29041,16 +29272,19 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 			}
 			// use
 			case 'use': {
-				if (isset($attribs['xlink:href'])) {
-					$use = $this->svgdefs[substr($attribs['xlink:href'], 1)];
-					if (isset($attribs['xlink:href'])) {
-						unset($attribs['xlink:href']);
+				if (isset($attribs['xlink:href']) AND !empty($attribs['xlink:href'])) {
+					$svgdefid = substr($attribs['xlink:href'], 1);
+					if (isset($this->svgdefs[$svgdefid])) {
+						$use = $this->svgdefs[$svgdefid];
+						if (isset($attribs['xlink:href'])) {
+							unset($attribs['xlink:href']);
+						}
+						if (isset($attribs['id'])) {
+							unset($attribs['id']);
+						}
+						$attribs = array_merge($attribs, $use['attribs']);
+						$this->startSVGElementHandler($parser, $use['name'], $attribs);
 					}
-					if (isset($attribs['id'])) {
-						unset($attribs['id']);
-					}
-					$attribs = array_merge($use['attribs'], $attribs);
-					$this->startSVGElementHandler($parser, $use['name'], $use['attribs']);
 				}
 				break;
 			}
@@ -29115,7 +29349,17 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 				$textrendermode = $this->textrendermode;
 				$textstrokewidth = $this->textstrokewidth;
 				$this->setTextRenderingMode($this->svgtextmode['stroke'], true, false);
+				if ($name == 'text') {
+					// store current coordinates
+					$tmpx = $this->x;
+					$tmpy = $this->y;
+				}
 				$this->Cell($textlen, 0, $text, 0, 0, '', false, '', 0, false, 'L', 'T');
+				if ($name == 'text') {
+					// restore coordinates
+					$this->x = $tmpx;
+					$this->y = $tmpy;
+				}
 				// restore previous rendering mode
 				$this->textrendermode = $textrendermode;
 				$this->textstrokewidth = $textstrokewidth;

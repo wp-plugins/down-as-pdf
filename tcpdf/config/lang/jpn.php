@@ -1,22 +1,31 @@
 <?php
 //============================================================+
 // File name   : jpn.php
-// Begin       : 2011-12-23
-// Last Update : 2011-12-23
+// Begin       : 2011-01-24
+// Last Update : 2011-01-24
 //
 // Description : Language module for TCPDF
 //               (contains translated texts)
 //               Japanese
 //
-// Author: redcocker
+// Author: Nicola Asuni - Translation by redcocker
+//
+// (c) Copyright:
+//               Nicola Asuni
+//               Tecnick.com LTD
+//               Manor Coach House, Church Hill
+//               Aldershot, Hants, GU12 4RQ
+//               UK
+//               www.tecnick.com
+//               info@tecnick.com
 //============================================================+
 
 /**
  * TCPDF language file (contains translated texts).
  * @package com.tecnick.tcpdf
  * @brief TCPDF language file: Japanese
- * @author Nicola Asuni
- * @since 2011-12-23
+ * @author Nicola Asuni - Translation by redcocker
+ * @since 2012-01-24
  */
 
 // Japanese
